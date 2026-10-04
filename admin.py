@@ -1,5 +1,6 @@
-"""Blueprint khu quản trị — Bước 5: tổng quan, kho sách (CRUD), danh mục, thống kê."""
-from datetime import datetime
+"""Blueprint khu quản trị — Bước 5 & 6: tổng quan, kho sách, danh mục, thống kê,
+yêu cầu mượn/trả, thành viên và nhật ký hệ thống."""
+from datetime import datetime, timedelta
 
 from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
@@ -13,6 +14,7 @@ from models import (
     Book,
     BorrowRequest,
     Category,
+    User,
     record_audit,
 )
 
@@ -315,3 +317,159 @@ def category_delete(cat_id):
         db.session.commit()
         flash(f'Đã xóa danh mục “{name}”.', 'success')
     return redirect(url_for('admin.categories'))
+
+
+@admin_bp.route('/requests', endpoint='requests')
+@admin_required
+def requests_view():
+    tab = request.args.get('tab', 'pending')
+    if tab not in ('pending', 'approved', 'return_pending', 'closed'):
+        tab = 'pending'
+
+    if tab == 'closed':
+        query = BorrowRequest.query.filter(
+            BorrowRequest.status.in_(['returned', 'rejected'])
+        )
+    else:
+        query = BorrowRequest.query.filter_by(status=tab)
+
+    items = query.order_by(
+        db.func.coalesce(BorrowRequest.decided_at, BorrowRequest.requested_at).desc(),
+        BorrowRequest.id.desc(),
+    ).all()
+
+    counts = {
+        'pending': BorrowRequest.query.filter_by(status='pending').count(),
+        'approved': BorrowRequest.query.filter_by(status='approved').count(),
+        'return_pending': BorrowRequest.query.filter_by(status='return_pending').count(),
+        'closed': BorrowRequest.query.filter(
+            BorrowRequest.status.in_(['returned', 'rejected'])
+        ).count(),
+    }
+    return render_template('admin/requests.html', items=items, tab=tab, counts=counts)
+
+
+@admin_bp.route('/requests/<int:req_id>/approve', methods=['POST'])
+@admin_required
+def request_approve(req_id):
+    req = db.session.get(BorrowRequest, req_id)
+    if req is None:
+        abort(404)
+    if req.status != 'pending':
+        flash('Yêu cầu này không còn ở trạng thái chờ duyệt.', 'warning')
+        return redirect(url_for('admin.requests'))
+
+    book = req.book
+    if not book.in_stock:
+        flash(f'Không thể duyệt: “{book.title}” hiện không còn bản khả dụng.', 'danger')
+        return redirect(url_for('admin.requests'))
+
+    now_dt = datetime.now()
+    req.status = 'approved'
+    req.decided_at = now_dt
+    req.due_date = now_dt + timedelta(days=BORROW_DAYS)
+    record_audit(
+        'Duyệt yêu cầu mượn',
+        f"Duyệt cho '{req.user.username}' mượn sách '{book.title}'",
+        current_user.id,
+    )
+    db.session.commit()
+    flash(
+        f'Đã duyệt đơn mượn “{book.title}” của {req.user.username}. '
+        f'Hạn trả: {req.due_date.strftime("%d/%m/%Y")}.',
+        'success',
+    )
+    return redirect(url_for('admin.requests', tab='pending'))
+
+
+@admin_bp.route('/requests/<int:req_id>/reject', methods=['POST'])
+@admin_required
+def request_reject(req_id):
+    req = db.session.get(BorrowRequest, req_id)
+    if req is None:
+        abort(404)
+    if req.status != 'pending':
+        flash('Yêu cầu này không còn ở trạng thái chờ duyệt.', 'warning')
+        return redirect(url_for('admin.requests'))
+
+    req.status = 'rejected'
+    req.decided_at = datetime.now()
+    record_audit(
+        'Từ chối yêu cầu mượn',
+        f"Từ chối đơn mượn sách '{req.book.title}' của '{req.user.username}'",
+        current_user.id,
+    )
+    db.session.commit()
+    flash(f'Đã từ chối đơn mượn “{req.book.title}” của {req.user.username}.', 'info')
+    return redirect(url_for('admin.requests', tab='pending'))
+
+
+@admin_bp.route('/requests/<int:req_id>/confirm-return', methods=['POST'])
+@admin_required
+def request_confirm_return(req_id):
+    req = db.session.get(BorrowRequest, req_id)
+    if req is None:
+        abort(404)
+    if req.status != 'return_pending':
+        flash('Đơn này chưa được yêu cầu trả sách.', 'warning')
+        return redirect(url_for('admin.requests', tab='return_pending'))
+
+    req.status = 'returned'
+    req.returned_at = datetime.now()
+    record_audit(
+        'Xác nhận trả sách',
+        f"'{req.user.username}' trả sách '{req.book.title}'",
+        current_user.id,
+    )
+    db.session.commit()
+    flash(f'Đã xác nhận trả sách “{req.book.title}” của {req.user.username}.', 'success')
+    return redirect(url_for('admin.requests', tab='return_pending'))
+
+
+@admin_bp.route('/users')
+@admin_required
+def users():
+    rows = (
+        db.session.query(User, db.func.count(BorrowRequest.id))
+        .outerjoin(BorrowRequest, BorrowRequest.user_id == User.id)
+        .group_by(User.id)
+        .order_by(User.created_at.desc(), User.id.desc())
+        .all()
+    )
+    items = [{'user': user, 'borrows': cnt} for user, cnt in rows]
+    return render_template('admin/users.html', items=items)
+
+
+@admin_bp.route('/users/<int:user_id>/toggle', methods=['POST'])
+@admin_required
+def user_toggle(user_id):
+    target = db.get_or_404(User, user_id)
+    if target.id == current_user.id:
+        flash('Bạn không thể khóa chính tài khoản của mình.', 'danger')
+        return redirect(url_for('admin.users'))
+    if not target.is_active and target.is_admin:
+        active_admins = User.query.filter(
+            User.role == 'admin', User.is_active.is_(True)
+        ).count()
+        if active_admins <= 1:
+            flash('Không thể khóa quản trị viên cuối cùng đang hoạt động.', 'danger')
+            return redirect(url_for('admin.users'))
+
+    target.is_active = not target.is_active
+    action = 'Khóa tài khoản' if not target.is_active else 'Mở khóa tài khoản'
+    record_audit(action, f"Tài khoản '{target.username}'", current_user.id)
+    db.session.commit()
+    verb = 'khóa' if not target.is_active else 'mở khóa'
+    flash(f'Đã {verb} tài khoản “{target.username}”.', 'success')
+    return redirect(url_for('admin.users'))
+
+
+@admin_bp.route('/audit')
+@admin_required
+def audit():
+    logs = (
+        AuditLog.query.order_by(AuditLog.created_at.desc(), AuditLog.id.desc())
+        .limit(100)
+        .all()
+    )
+    return render_template('admin/audit.html', logs=logs)

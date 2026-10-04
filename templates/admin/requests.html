@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% block title %}Yêu cầu mượn – Quản trị{% endblock %}
+{% block content %}
+<h1 class="h4 fw-bold mb-4">Yêu cầu mượn / trả sách</h1>
+
+<ul class="nav nav-pills mb-3 flex-wrap gap-1">
+  <li class="nav-item">
+    <a class="nav-link {{ 'active' if tab == 'pending' }}"
+       href="{{ url_for('admin.requests', tab='pending') }}">
+      Chờ duyệt <span class="badge bg-danger ms-1">{{ counts.pending }}</span>
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link {{ 'active' if tab == 'approved' }}"
+       href="{{ url_for('admin.requests', tab='approved') }}">
+      Đang mượn <span class="badge bg-primary ms-1">{{ counts.approved }}</span>
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link {{ 'active' if tab == 'return_pending' }}"
+       href="{{ url_for('admin.requests', tab='return_pending') }}">
+      Chờ xác nhận trả <span class="badge bg-info ms-1">{{ counts.return_pending }}</span>
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link {{ 'active' if tab == 'closed' }}"
+       href="{{ url_for('admin.requests', tab='closed') }}">
+      Đã xử lý <span class="badge bg-secondary ms-1">{{ counts.closed }}</span>
+    </a>
+  </li>
+</ul>
+
+<div class="card border-0 shadow-sm">
+  <div class="table-responsive">
+    <table class="table align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th style="width: 64px;">Ảnh</th>
+          <th>Sách</th>
+          <th>Người mượn</th>
+          <th>Ngày yêu cầu</th>
+          <th>Trạng thái</th>
+          <th>Hạn trả / Hoàn thành</th>
+          <th class="text-end">Thao tác</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in items %}
+        <tr>
+          <td><img src="{{ r.book.cover }}" class="thumb-sm" alt=""></td>
+          <td class="fw-semibold">{{ r.book.title }}</td>
+          <td>
+            {{ r.user.username }}
+            {% if r.user.role == 'admin' %}<span class="badge bg-dark ms-1">admin</span>{% endif %}
+          </td>
+          <td class="text-muted">{{ r.requested_at|fmt_date }}</td>
+          <td>
+            <span class="badge bg-{{ status_colors[r.status] }}">{{ status_labels[r.status] }}</span>
+          </td>
+          <td>
+            {% if r.due_date %}
+            <span class="text-muted">{{ r.due_date|fmt_date }}</span>
+            {% endif %}
+            {% if r.returned_at %}
+            <span class="badge bg-success-subtle text-success ms-1">Trả: {{ r.returned_at|fmt_date }}</span>
+            {% endif %}
+            {% if r.status == 'rejected' and r.decided_at %}
+            <span class="badge bg-secondary-subtle text-secondary ms-1">Ngày: {{ r.decided_at|fmt_date }}</span>
+            {% endif %}
+          </td>
+          <td class="text-end text-nowrap">
+            {% if r.status == 'pending' %}
+            <div class="d-inline-flex gap-1">
+              <form method="post" action="{{ url_for('admin.request_approve', req_id=r.id) }}">
+                <button class="btn btn-sm btn-success">Duyệt</button>
+              </form>
+              <form method="post" action="{{ url_for('admin.request_reject', req_id=r.id) }}"
+                    data-confirm="Từ chối yêu cầu mượn “{{ r.book.title }}” của {{ r.user.username }}?">
+                <button class="btn btn-sm btn-outline-danger">Từ chối</button>
+              </form>
+            </div>
+            {% elif r.status == 'return_pending' %}
+            <form method="post" action="{{ url_for('admin.request_confirm_return', req_id=r.id) }}">
+              <button class="btn btn-sm btn-primary">
+                <i class="bi bi-check-lg me-1"></i>Xác nhận trả sách
+              </button>
+            </form>
+            {% else %}
+            <span class="text-muted small">—</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="7" class="text-center text-muted py-4">
+            Không có yêu cầu nào trong mục này.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

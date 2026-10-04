@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% block title %}Thành viên – Quản trị{% endblock %}
+{% block content %}
+<h1 class="h4 fw-bold mb-4">
+  Quản lý thành viên <span class="text-muted fw-normal">({{ items|length }} tài khoản)</span>
+</h1>
+
+<div class="card border-0 shadow-sm">
+  <div class="table-responsive">
+    <table class="table align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th style="width: 60px;">#</th>
+          <th>Tên đăng nhập</th>
+          <th>Email</th>
+          <th>Vai trò</th>
+          <th>Trạng thái</th>
+          <th>Ngày tham gia</th>
+          <th>Lượt mượn</th>
+          <th class="text-end">Thao tác</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in items %}
+        <tr>
+          <td class="text-muted">{{ loop.index }}</td>
+          <td class="fw-semibold">
+            {{ item.user.username }}
+            {% if item.user.id == current_user.id %}
+            <span class="badge bg-primary ms-1">bạn</span>
+            {% endif %}
+          </td>
+          <td class="text-muted">{{ item.user.email or '—' }}</td>
+          <td>
+            {% if item.user.is_admin %}
+            <span class="badge bg-dark">Quản trị</span>
+            {% else %}
+            <span class="badge bg-light text-dark border">Thành viên</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if item.user.is_active %}
+            <span class="badge bg-success-subtle text-success">Hoạt động</span>
+            {% else %}
+            <span class="badge bg-danger-subtle text-danger">Đã khóa</span>
+            {% endif %}
+          </td>
+          <td class="text-muted">{{ item.user.created_at|fmt_date }}</td>
+          <td>{{ item.borrows }}</td>
+          <td class="text-end">
+            {% if item.user.id != current_user.id %}
+            <form method="post"
+                  action="{{ url_for('admin.user_toggle', user_id=item.user.id) }}"
+                  data-confirm="{{ 'Mở khóa' if not item.user.is_active else 'Khóa' }} tài khoản “{{ item.user.username }}”?">
+              <button class="btn btn-sm {{ 'btn-success' if not item.user.is_active else 'btn-outline-warning' }}">
+                {{ 'Mở khóa' if not item.user.is_active else 'Khóa' }}
+              </button>
+            </form>
+            {% else %}
+            <span class="text-muted small">Tài khoản của bạn</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
