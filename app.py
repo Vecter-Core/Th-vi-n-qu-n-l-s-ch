@@ -6,9 +6,23 @@ Truy cập:        http://127.0.0.1:5000
 Quản trị viên:   admin / admin123
 """
 import os
+import sys
 from datetime import datetime
 
-from flask import (
+
+def _force_utf8_stdio():
+    """Mặc định, console Windows dùng mã cp1252 khiến việc in chữ tiếng Việt
+    gây UnicodeEncodeError. Ép stdout/stderr ra UTF-8 (kiểu thay thế ký tự lạ)."""
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding='utf-8', errors='replace')
+        except (AttributeError, ValueError, OSError):
+            pass
+
+
+_force_utf8_stdio()
+
+from flask import (  # noqa: E402
     Flask,
     current_app,
     flash,

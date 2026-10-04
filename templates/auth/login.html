@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block title %}Đăng nhập – Thư viện Số{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6 col-lg-4">
+    <div class="card border-0 shadow-sm auth-card">
+      <div class="card-body p-4">
+        <div class="text-center mb-4">
+          <div class="auth-logo">📚</div>
+          <h1 class="h5 fw-bold">Đăng nhập vào Thư viện Số</h1>
+          <p class="small text-muted mb-0">Chào mừng bạn trở lại!</p>
+        </div>
+
+        {% if error %}
+        <div class="alert alert-danger py-2 small">{{ error }}</div>
+        {% endif %}
+
+        <form method="post">
+          <div class="mb-3">
+            <label class="form-label fw-semibold small">Tên đăng nhập</label>
+            <input class="form-control" name="username" required autofocus
+                   placeholder="vd: admin" value="{{ request.form.get('username', '') }}">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold small">Mật khẩu</label>
+            <input type="password" class="form-control" name="password" required placeholder="••••••">
+          </div>
+          <button class="btn btn-primary w-100 py-2">Đăng nhập</button>
+        </form>
+
+        <hr>
+        <div class="alert alert-light border small mb-3">
+          <i class="bi bi-info-circle me-1"></i>
+          Tài khoản quản trị mặc định: <b>admin</b> / <b>admin123</b>
+        </div>
+        <p class="small text-center text-muted mb-0">
+          Chưa có tài khoản? <a href="{{ url_for('auth.register') }}">Đăng ký ngay</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

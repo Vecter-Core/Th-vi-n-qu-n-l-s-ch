@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="560" viewBox="0 0 400 560">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#01579b"/>
+      <stop offset="100%" stop-color="#4fc3f7"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="560" fill="url(#bg)"/>
+  <circle cx="340" cy="80" r="140" fill="#ffffff" opacity="0.07"/>
+  <circle cx="40" cy="500" r="160" fill="#000000" opacity="0.10"/>
+  <rect x="18" y="18" width="364" height="524" rx="12" fill="none" stroke="#ffffff" stroke-opacity="0.4" stroke-width="2"/>
+  <text x="200" y="64" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="15" letter-spacing="6" fill="#ffffff" fill-opacity="0.8">THƯ VIỆN SỐ</text>
+  <text x="200" y="250" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="30" font-weight="700" fill="#ffffff">Đắc Nhân Tâm</text>
+  <line x1="150" y1="304" x2="250" y2="304" stroke="#ffffff" stroke-opacity="0.6" stroke-width="2"/>
+  <text x="200" y="318" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="20" fill="#ffffff" fill-opacity="0.95">Dale Carnegie</text>
+  <text x="200" y="512" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="14" fill="#ffffff" fill-opacity="0.75">Kỹ năng sống</text>
+</svg>
