@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% block title %}Trang chủ – Thư viện Số{% endblock %}
+{% block content %}
+{% if not filtering %}
+<section class="hero rounded-4 p-4 p-md-5 mb-4 text-white">
+  <div class="row align-items-center g-4">
+    <div class="col-lg-9">
+      <h1 class="fw-bold mb-2">Chào mừng đến với <span class="text-warning">Thư viện Số</span></h1>
+      <p class="mb-4 opacity-75">
+        {{ stats.total_books }} đầu sách · {{ stats.total_copies }} bản ·
+        {{ stats.total_categories }} danh mục — khám phá và mượn sách ngay hôm nay.
+      </p>
+      <div class="d-flex flex-wrap gap-2 hero-stats rounded-3 px-3 py-2">
+        <span class="small"><i class="bi bi-book me-1"></i>{{ stats.total_books }} đầu sách</span>
+        <span class="small"><i class="bi bi-journal me-1"></i>{{ stats.total_copies }} bản sẵn có</span>
+        <span class="small"><i class="bi bi-tags me-1"></i>{{ stats.total_categories }} danh mục</span>
+      </div>
+    </div>
+    <div class="col-lg-3 text-lg-end">
+      <div class="display-3 fw-bold opacity-75">📚</div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<form class="row g-2 mb-4 filter-bar" method="get" action="{{ url_for('user.home') }}">
+  <div class="col-md-5">
+    <label class="form-label small text-muted mb-1">Tìm kiếm</label>
+    <input type="search" name="q" class="form-control"
+           placeholder="Tên sách hoặc tác giả…" value="{{ q }}">
+  </div>
+  <div class="col-md-4">
+    <label class="form-label small text-muted mb-1">Danh mục</label>
+    <select name="category" class="form-select">
+      <option value="">Tất cả danh mục</option>
+      {% for c in categories %}
+      <option value="{{ c.id }}" {% if c.id == category_id %}selected{% endif %}>{{ c.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-md-3">
+    <label class="form-label small text-muted mb-1">Trạng thái</label>
+    <select name="status" class="form-select">
+      <option value="">Tất cả</option>
+      <option value="in" {% if status == 'in' %}selected{% endif %}>Còn sách</option>
+      <option value="out" {% if status == 'out' %}selected{% endif %}>Hết sách</option>
+    </select>
+  </div>
+  <div class="col-12 col-md-4 text-md-end">
+    <button class="btn btn-primary w-100 w-md-auto px-4">
+      <i class="bi bi-search me-1"></i>Tìm kiếm
+    </button>
+  </div>
+</form>
+
+{% if filtering %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 class="h5 fw-bold mb-0">
+    Kết quả tìm kiếm
+    {% if q %}<span class="text-primary">“{{ q }}”</span>{% endif %}
+    <span class="text-muted fw-normal">({{ books | length }} cuốn)</span>
+  </h2>
+  <a href="{{ url_for('user.home') }}" class="btn btn-sm btn-outline-secondary">
+    <i class="bi bi-x-lg me-1"></i>Xóa bộ lọc
+  </a>
+</div>
+{% endif %}
+
+{% if filtering %}
+  {% if books %}
+  <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 g-3">
+    {% for book in books %}
+    {% include 'partials/book_card.html' %}
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="text-center py-5 empty-state">
+    <div class="fs-1 mb-3">📭</div>
+    <h5 class="fw-bold">Không tìm thấy sách phù hợp</h5>
+    <p class="text-muted mb-3">Hãy thử từ khóa khác hoặc xóa bớt bộ lọc.</p>
+    <a href="{{ url_for('user.home') }}" class="btn btn-primary btn-sm">Về trang chủ</a>
+  </div>
+  {% endif %}
+{% elif grouped %}
+  {% for cat_name, items in grouped %}
+  <section class="mb-5">
+    <div class="d-flex align-items-center mb-3">
+      <h2 class="h5 fw-bold me-3 mb-0">{{ cat_name }}</h2>
+      <span class="badge bg-light text-dark border">{{ items | length }} cuốn</span>
+      <div class="flex-grow-1 border-top border-secondary bg-opacity-50 ms-3"></div>
+    </div>
+    <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 g-3">
+      {% for book in items %}
+      {% include 'partials/book_card.html' %}
+      {% endfor %}
+    </div>
+  </section>
+  {% endfor %}
+{% else %}
+  <div class="text-center py-5 empty-state">
+    <div class="fs-1 mb-3">📚</div>
+    <h5 class="fw-bold">Thư viện đang trống</h5>
+    <p class="text-muted">Quản trị viên sẽ sớm bổ sung sách!</p>
+  </div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+{% block title %}{{ book.title }} – Thư viện Số{% endblock %}
+{% block content %}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb small">
+    <li class="breadcrumb-item"><a href="{{ url_for('user.home') }}">Trang chủ</a></li>
+    {% if book.category %}
+    <li class="breadcrumb-item">
+      <a href="{{ url_for('user.home', category=book.category_id) }}">{{ book.category.name }}</a>
+    </li>
+    {% endif %}
+    <li class="breadcrumb-item active">{{ book.title }}</li>
+  </ol>
+</nav>
+
+<div class="row g-4">
+  <div class="col-md-4 col-lg-3">
+    <img src="{{ book.cover }}" alt="{{ book.title }}"
+         class="img-fluid w-100 detail-cover shadow">
+  </div>
+  <div class="col-md-8 col-lg-9">
+    {% if book.category %}
+    <span class="badge bg-light text-dark border mb-2">{{ book.category.name }}</span>
+    {% endif %}
+    <h1 class="fw-bold">{{ book.title }}</h1>
+    <p class="lead text-muted mb-3">{{ book.author }}</p>
+
+    <div class="d-flex align-items-center gap-2 mb-3">
+      <span class="rating-stars large">
+        {% for i in range(1, 6) %}
+        <span class="{{ 'filled' if i <= avg|round(0)|int else '' }}">★</span>
+        {% endfor %}
+      </span>
+      <b>{{ avg }}</b><span class="text-muted small">/ 5 · {{ count }} đánh giá</span>
+    </div>
+
+    <div class="book-description mb-3">{{ book.description }}</div>
+
+    <div class="d-flex flex-wrap gap-2 align-items-center mb-4">
+      {% if book.in_stock %}
+      <span class="badge bg-success-subtle text-success fs-6 px-3 py-2">
+        <i class="bi bi-check-circle me-1"></i>Còn {{ book.available }} / {{ book.quantity }} bản
+      </span>
+      {% else %}
+      <span class="badge bg-danger-subtle text-danger fs-6 px-3 py-2">
+        <i class="bi bi-x-circle me-1"></i>Hết bản khả dụng
+      </span>
+      {% endif %}
+      <span class="text-muted small">Mã sách: #{{ book.id }}</span>
+    </div>
+
+    {% if active_request %}
+    <div class="alert alert-info py-3 mb-0">
+      <i class="bi bi-hourglass-split me-1"></i>
+      Bạn đã có yêu cầu mượn cuốn sách này —
+      <b>{{ status_labels[active_request.status] }}</b>.
+      {% if active_request.status == 'approved' and active_request.due_date %}
+      Hạn trả: <b>{{ active_request.due_date|fmt_date }}</b>.
+      {% endif %}
+    </div>
+    {% else %}
+    {% if not current_user.is_authenticated %}
+    <a href="{{ url_for('auth.login', next=request.path) }}" class="btn btn-primary px-4">
+      <i class="bi bi-box-arrow-in-right me-1"></i>Đăng nhập để mượn sách
+    </a>
+    {% else %}
+    <form method="post" action="{{ url_for('user.add_to_cart', book_id=book.id) }}"
+          class="d-flex gap-2"
+          {% if not book.in_stock %}style="visibility:hidden;opacity:0"{% endif %}>
+      <input type="hidden" name="next" value="{{ request.path }}">
+      <button class="btn btn-primary px-4">
+        <i class="bi bi-bag-plus me-1"></i>Thêm vào giỏ mượn
+      </button>
+    </form>
+    {% endif %}
+    {% endif %}
+  </div>
+</div>
+
+<section class="mt-5">
+  <h2 class="h4 fw-bold mb-3">
+    Đánh giá & bình luận
+    <span class="text-muted fw-normal fs-6">({{ count }})</span>
+  </h2>
+
+  {% if current_user.is_authenticated %}
+  <form method="post" action="{{ url_for('user.add_review', book_id=book.id) }}"
+        class="card border-0 shadow-sm p-3 mb-4">
+    <div class="d-flex align-items-center gap-2 mb-2">
+      <span class="fw-semibold small text-nowrap">Bạn chấm:</span>
+      <div class="star-input">
+        <input type="radio" name="rating" id="st5" value="5"
+               {% if my_review and my_review.rating == 5 %}checked{% endif %}>
+        <label for="st5" title="5 sao">★</label>
+        <input type="radio" name="rating" id="st4" value="4"
+               {% if my_review and my_review.rating == 4 %}checked{% endif %}>
+        <label for="st4" title="4 sao">★</label>
+        <input type="radio" name="rating" id="st3" value="3"
+               {% if my_review and my_review.rating == 3 %}checked{% endif %}>
+        <label for="st3" title="3 sao">★</label>
+        <input type="radio" name="rating" id="st2" value="2"
+               {% if my_review and my_review.rating == 2 %}checked{% endif %}>
+        <label for="st2" title="2 sao">★</label>
+        <input type="radio" name="rating" id="st1" value="1"
+               {% if my_review and my_review.rating == 1 %}checked{% endif %}>
+        <label for="st1" title="1 sao">★</label>
+      </div>
+    </div>
+    <div class="d-flex gap-2">
+      <textarea name="comment" class="form-control" rows="2" minlength="5" required
+                placeholder="Chia sẻ cảm nhận của bạn về cuốn sách này…">{{ my_review.comment if my_review else '' }}</textarea>
+      <button class="btn btn-primary text-nowrap align-self-end">
+        {{ 'Cập nhật đánh giá' if my_review else 'Gửi đánh giá' }}
+      </button>
+    </div>
+  </form>
+  {% else %}
+  <div class="alert alert-light border py-2 mb-4">
+    <a href="{{ url_for('auth.login', next=request.path) }}">Đăng nhập</a>
+    để viết đánh giá và bình luận cho cuốn sách này.
+  </div>
+  {% endif %}
+
+  {% if reviews %}
+  <div class="list-group list-group-flush">
+    {% for r in reviews %}
+    <div class="list-group-item px-0 review-item py-3">
+      <div class="d-flex gap-3">
+        <div class="review-avatar">{{ r.author.username[:1]|upper }}</div>
+        <div class="flex-grow-1">
+          <div class="d-flex flex-wrap align-items-center gap-2">
+            <b>{{ r.author.username }}</b>
+            <span class="small text-warning">
+              {% for i in range(1, 6) %}
+              {% if i <= r.rating %}★{% else %}<span class="text-muted">★</span>{% endif %}
+              {% endfor %}
+            </span>
+            <span class="text-muted small">· {{ r.created_at|fmt_date }}</span>
+          </div>
+          <p class="mb-0 mt-1">{{ r.comment }}</p>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="text-muted text-center py-4">
+    Chưa có đánh giá nào — hãy là người đầu tiên chia sẻ!
+  </p>
+  {% endif %}
+</section>
+{% endblock %}
