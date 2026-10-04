@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block title %}500 – Lỗi hệ thống – Thư viện Số{% endblock %}
+{% block content %}
+<div class="text-center py-5 empty-state mx-auto">
+  <div class="display-1 fw-bold text-warning">500</div>
+  <h4 class="fw-bold">Đã có lỗi xảy ra</h4>
+  <p class="text-muted">Xin lỗi, hệ thống gặp sự cố. Vui lòng thử lại sau ít phút.</p>
+  <a href="{{ url_for('user.home') }}" class="btn btn-primary mt-2">Về trang chủ</a>
+</div>
+{% endblock %}

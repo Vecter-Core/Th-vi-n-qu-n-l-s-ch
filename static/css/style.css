@@ -1,0 +1,247 @@
+/* ===== Thư viện Số — tùy biến giao diện ===== */
+:root {
+  --primary: #1a237e;
+  --primary-2: #283593;
+  --accent: #ffb300;
+  --bg: #f4f6fb;
+}
+
+body {
+  background: var(--bg);
+  font-family: 'Be Vietnam Pro', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+.main-container {
+  min-height: calc(100vh - 220px);
+}
+
+/* ===== Navbar ===== */
+.navbar {
+  background: linear-gradient(90deg, var(--primary), var(--primary-2));
+}
+
+.navbar-brand {
+  letter-spacing: .3px;
+}
+
+.cart-badge {
+  position: absolute;
+  top: -8px;
+  right: -10px;
+  background: var(--accent);
+  color: var(--primary);
+  font-size: .65rem;
+}
+
+/* ===== Hero ===== */
+.hero {
+  background: linear-gradient(135deg, var(--primary), #3949ab 60%, #5c6bc0);
+}
+
+.hero .text-warning {
+  color: var(--accent) !important;
+}
+
+.hero-stats {
+  background: rgba(255, 255, 255, .12);
+  border: 1px solid rgba(255, 255, 255, .25);
+  backdrop-filter: blur(4px);
+}
+
+/* ===== Thẻ sách ===== */
+.book-card {
+  border: 0;
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+
+.book-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 .5rem 1.25rem rgba(26, 35, 126, .18) !important;
+}
+
+.book-cover-wrap {
+  display: block;
+  position: relative;
+}
+
+.book-cover {
+  width: 100%;
+  aspect-ratio: 400 / 560;
+  object-fit: cover;
+  border-top-left-radius: .375rem;
+  border-top-right-radius: .375rem;
+}
+
+.book-title {
+  min-height: 2.4em;
+}
+
+.book-title a {
+  color: #212529;
+  text-decoration: none;
+}
+
+.book-title a:hover {
+  color: var(--primary);
+}
+
+/* ===== Sao đánh giá ===== */
+.rating-stars {
+  color: #cfd4dc;
+  letter-spacing: 2px;
+  font-size: 1.1rem;
+}
+
+.rating-stars .filled {
+  color: var(--accent);
+}
+
+.rating-stars.large {
+  font-size: 1.6rem;
+  letter-spacing: 3px;
+}
+
+/* Ô nhập sao khi viết đánh giá */
+.star-input {
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+}
+
+.star-input input {
+  display: none;
+}
+
+.star-input label {
+  font-size: 1.8rem;
+  color: #cfd4dc;
+  cursor: pointer;
+  margin-left: 4px;
+  transition: color .1s;
+}
+
+.star-input label:hover,
+.star-input label:hover ~ label,
+.star-input input:checked ~ label {
+  color: var(--accent);
+}
+
+/* ===== Ảnh thu nhỏ ===== */
+.thumb-sm,
+.cart-thumb {
+  width: 44px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.detail-cover {
+  max-width: 320px;
+  border-radius: .5rem;
+}
+
+/* ===== Biểu đồ ===== */
+.chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+  height: 240px;
+  padding: 10px 4px 0;
+}
+
+.chart-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  height: 100%;
+}
+
+.chart-value {
+  font-size: .8rem;
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 4px;
+}
+
+.chart-bar {
+  width: 70%;
+  max-width: 46px;
+  background: linear-gradient(180deg, #3949ab, #7986cb);
+  border-radius: 6px 6px 0 0;
+  min-height: 4px;
+}
+
+.chart-label {
+  font-size: .75rem;
+  color: #6c757d;
+  margin-top: 6px;
+}
+
+/* ===== Trang đăng nhập / đăng ký ===== */
+.auth-card {
+  border-radius: 1rem;
+}
+
+.auth-logo {
+  font-size: 3rem;
+  margin-bottom: .5rem;
+}
+
+/* ===== Đánh giá ===== */
+.review-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), #5c6bc0);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.review-item {
+  border-left: 3px solid transparent;
+}
+
+/* ===== Khác ===== */
+.empty-state {
+  max-width: 480px;
+  margin: 0 auto;
+  background: #fff;
+  border-radius: 1rem;
+  padding: 2.5rem 1rem;
+}
+
+.stat-card {
+  transition: transform .12s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+}
+
+.nav-pills .nav-link {
+  color: var(--primary-2);
+  font-weight: 500;
+}
+
+.nav-pills .nav-link.active {
+  background: var(--primary-2);
+}
+
+.stat-icon {
+  font-size: 1.6rem;
+}
+
+.book-description {
+  line-height: 1.7;
+  color: #495057;
+  background: #fff;
+  border: 1px solid #e9ecf5;
+  border-radius: .5rem;
+  padding: 1rem 1.25rem;
+}
