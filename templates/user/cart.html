@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% block title %}Giỏ mượn – Thư viện Số{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+  <h1 class="h4 fw-bold mb-0">Giỏ mượn của tôi</h1>
+  <div style="min-width: 190px;">
+    <div class="d-flex justify-content-between small mb-1">
+      <span>Đã chọn</span>
+      <span><b>{{ books|length }}</b> / {{ max_items }} cuốn</span>
+    </div>
+    <div class="progress" style="height: 8px;">
+      <div class="progress-bar" style="width: {{ (books|length / max_items * 100) | round(0) }}%"></div>
+    </div>
+  </div>
+</div>
+
+{% if books %}
+<div class="card border-0 shadow-sm">
+  <div class="table-responsive">
+    <table class="table align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th style="width: 70px;">Ảnh</th>
+          <th>Sách</th>
+          <th>Tác giả</th>
+          <th>Tồn kho</th>
+          <th class="text-end">Thao tác</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for book in books %}
+        <tr>
+          <td><img src="{{ book.cover }}" class="cart-thumb" alt=""></td>
+          <td>
+            <a class="fw-semibold text-decoration-none"
+               href="{{ url_for('user.book_detail', book_id=book.id) }}">{{ book.title }}</a>
+          </td>
+          <td class="text-muted">{{ book.author }}</td>
+          <td>
+            {% if book.in_stock %}
+            <span class="badge bg-success-subtle text-success">Còn {{ book.available }} bản</span>
+            {% else %}
+            <span class="badge bg-danger-subtle text-danger">Hết sách</span>
+            {% endif %}
+          </td>
+          <td class="text-end">
+            <form method="post" action="{{ url_for('user.remove_from_cart', book_id=book.id) }}"
+                  class="d-inline">
+              <button class="btn btn-sm btn-outline-danger">
+                <i class="bi bi-trash me-1"></i>Gỡ
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="card-body border-top d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <small class="text-muted">
+      Mỗi lần bạn được chọn tối đa {{ max_items }} cuốn. Hạn mượn: 14 ngày kể từ khi được duyệt.
+    </small>
+    <form method="post" action="{{ url_for('user.submit_borrow') }}">
+      <button class="btn btn-primary px-4">
+        <i class="bi bi-send me-1"></i>Gửi yêu cầu mượn ({{ books|length }} cuốn)
+      </button>
+    </form>
+  </div>
+</div>
+{% else %}
+<div class="text-center py-5 empty-state">
+  <div class="fs-1 mb-3">🛒</div>
+  <h5 class="fw-bold">Giỏ mượn đang trống</h5>
+  <p class="text-muted mb-3">Duyệt qua các danh mục và chọn cuốn sách bạn yêu thích nhé.</p>
+  <a href="{{ url_for('user.home') }}" class="btn btn-primary">
+    <i class="bi bi-search me-1"></i>Khám phá sách
+  </a>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,7 +1,16 @@
 """Blueprint khu người dùng — Bước 3: trang chủ, tìm kiếm, lọc, chi tiết sách, đánh giá."""
 from datetime import datetime
 
-from flask import Blueprint, flash, redirect, render_template, request, session, url_for
+from flask import (
+    Blueprint,
+    abort,
+    flash,
+    redirect,
+    render_template,
+    request,
+    session,
+    url_for,
+)
 from flask_login import current_user, login_required
 from sqlalchemy import or_
 
@@ -164,3 +173,114 @@ def add_to_cart(book_id):
 
     next_url = request.args.get('next')
     return redirect(next_url or request.referrer or url_for('user.home'))
+
+
+BORROW_DAYS = 14
+
+
+@user_bp.route('/gio')
+def cart():
+    books = [b for b in (db.session.get(Book, i) for i in _cart()) if b is not None]
+    return render_template('user/cart.html', books=books, max_items=MAX_CART_ITEMS)
+
+
+@user_bp.route('/gio/gia/<int:book_id>', methods=['POST'])
+@login_required
+def remove_from_cart(book_id):
+    _save_cart([i for i in _cart() if i != book_id])
+    flash('Đã loại sách khỏi giỏ mượn.', 'info')
+    return redirect(request.referrer or url_for('user.cart'))
+
+
+@user_bp.route('/gio/ghi', methods=['POST'])
+@login_required
+def submit_borrow():
+    ids = _cart()
+    if not ids:
+        flash('Giỏ mượn đang trống, bạn không thể gửi yêu cầu.', 'warning')
+        return redirect(url_for('user.cart'))
+
+    created, skipped = 0, []
+    for book_id in ids:
+        book = db.session.get(Book, book_id)
+        if book is None:
+            continue
+        if not book.in_stock:
+            skipped.append(f'“{book.title}” đã hết bản khả dụng.')
+            continue
+        if _active_request(current_user, book_id):
+            skipped.append(f'“{book.title}” đã có yêu cầu đang xử lý.')
+            continue
+        db.session.add(
+            BorrowRequest(
+                user_id=current_user.id,
+                book_id=book_id,
+                status=BorrowRequest.PENDING,
+                requested_at=datetime.now(),
+            )
+        )
+        created += 1
+
+    if created:
+        _save_cart([])
+        db.session.commit()
+        flash(f'Đã gửi {created} yêu cầu mượn. Quản trị viên sẽ xem xét sớm!', 'success')
+    else:
+        db.session.rollback()
+        flash('Không thể gửi yêu cầu: các cuốn trong giỏ hiện không khả dụng.', 'danger')
+    for msg in skipped:
+        flash(msg, 'warning')
+    return redirect(url_for('user.dashboard'))
+
+
+@user_bp.route('/tu-sach')
+@login_required
+def dashboard():
+    active = (
+        BorrowRequest.query.filter(
+            BorrowRequest.user_id == current_user.id,
+            BorrowRequest.status.in_(['pending', 'approved', 'return_pending']),
+        ).order_by(BorrowRequest.requested_at.desc()).all()
+    )
+    history = (
+        BorrowRequest.query.filter(
+            BorrowRequest.user_id == current_user.id,
+            BorrowRequest.status.in_(['returned', 'rejected']),
+        )
+        .order_by(
+            db.func.coalesce(
+                BorrowRequest.returned_at, BorrowRequest.decided_at
+            ).desc()
+        )
+        .all()
+    )
+    counts = {
+        'borrowing': sum(1 for r in active if r.status in ('approved', 'return_pending')),
+        'pending': sum(1 for r in active if r.status == 'pending'),
+        'returned': BorrowRequest.query.filter(
+            BorrowRequest.user_id == current_user.id,
+            BorrowRequest.status == 'returned',
+        ).count(),
+    }
+    return render_template(
+        'user/dashboard.html', active=active, history=history, counts=counts
+    )
+
+
+@user_bp.route('/tu-sach/tra/<int:req_id>', methods=['POST'])
+@login_required
+def request_return(req_id):
+    req = db.session.get(BorrowRequest, req_id)
+    if req is None or req.user_id != current_user.id:
+        abort(404)
+    if req.status != 'approved':
+        flash('Chỉ có thể yêu cầu trả sách khi đang được duyệt mượn.', 'warning')
+    else:
+        req.status = 'return_pending'
+        db.session.commit()
+        flash(
+            f'Đã ghi nhận yêu cầu trả “{req.book.title}”. '
+            'Quản trị viên sẽ xác nhận khi nhận được sách.',
+            'success',
+        )
+    return redirect(url_for('user.dashboard'))
