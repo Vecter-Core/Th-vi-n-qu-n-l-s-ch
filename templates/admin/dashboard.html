@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+{% block title %}Tổng quan quản trị – Thư viện Số{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+  <h1 class="h4 fw-bold mb-0">Tổng quan hệ thống</h1>
+  <a href="{{ url_for('admin.books') }}" class="btn btn-primary btn-sm">
+    <i class="bi bi-book me-1"></i>Quản lý kho sách
+  </a>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg-3">
+    <div class="card border-0 shadow-sm p-3 stat-card">
+      <div class="d-flex justify-content-between align-items-start">
+        <div class="fs-2 fw-bold">{{ total_books }}</div>
+        <span class="stat-icon">📚</span>
+      </div>
+      <div class="small text-muted">Tổng đầu sách</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="card border-0 shadow-sm p-3 stat-card">
+      <div class="d-flex justify-content-between align-items-start">
+        <div class="fs-2 fw-bold">{{ total_copies }}</div>
+        <span class="stat-icon">📖</span>
+      </div>
+      <div class="small text-muted">Tổng số bản</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="card border-0 shadow-sm p-3 stat-card">
+      <div class="d-flex justify-content-between align-items-start">
+        <div class="fs-2 fw-bold text-warning">{{ active_borrows }}</div>
+        <span class="stat-icon">🤝</span>
+      </div>
+      <div class="small text-muted">Đang cho mượn</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="card border-0 shadow-sm p-3 stat-card">
+      <div class="d-flex justify-content-between align-items-start">
+        <div class="fs-2 fw-bold text-danger">{{ pending_count }}</div>
+        <span class="stat-icon">⏳</span>
+      </div>
+      <div class="small text-muted">Yêu cầu chờ duyệt</div>
+      {% if has_endpoint('admin.requests') and pending_count %}
+      <a class="small text-primary" href="{{ url_for('admin.requests', tab='pending') }}">Xử lý ngay →</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white fw-semibold py-3">Lượt mượn theo tháng (6 tháng gần nhất)</div>
+      <div class="card-body">
+        <div class="chart">
+          {% for m in monthly %}
+          <div class="chart-col">
+            <div class="chart-value">{{ m.count }}</div>
+            <div class="chart-bar" style="height: {{ m.pct }}%"></div>
+            <div class="chart-label">{{ m.label }}</div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white fw-semibold py-3">Sách được mượn nhiều nhất</div>
+      <div class="card-body">
+        {% if top_books %}
+        <div class="d-flex flex-column gap-3">
+          {% for t in top_books %}
+          <div>
+            <div class="d-flex justify-content-between small mb-1">
+              <span class="text-truncate me-2">{{ t.book.title }}</span>
+              <b class="text-nowrap">{{ t.count }} lượt</b>
+            </div>
+            <div class="progress" style="height: 6px;">
+              <div class="progress-bar bg-primary"
+                   style="width: {{ (t.count / max_top * 100) | round(0) }}%"></div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-muted mb-0">Chưa có dữ liệu lượt mượn.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white fw-semibold py-3 d-flex justify-content-between align-items-center">
+        <span>Hoạt động gần đây</span>
+        {% if has_endpoint('admin.audit') %}
+        <a href="{{ url_for('admin.audit') }}" class="small text-primary">Xem tất cả</a>
+        {% endif %}
+      </div>
+      <ul class="list-group list-group-flush">
+        {% for log in recent_logs %}
+        <li class="list-group-item px-3 py-2">
+          <div class="d-flex justify-content-between gap-2">
+            <span class="text-truncate"><b>{{ log.action }}</b> — {{ log.details or '—' }}</span>
+            <span class="text-muted small text-nowrap">{{ log.created_at|fmt_datetime }}</span>
+          </div>
+          <div class="small text-muted">
+            Người thực hiện: {{ log.actor.username if log.actor else 'Hệ thống' }}
+          </div>
+        </li>
+        {% else %}
+        <li class="list-group-item px-3 text-muted">Chưa có hoạt động nào.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white fw-semibold py-3">Truy cập nhanh</div>
+      <div class="list-group list-group-flush">
+        <a class="list-group-item list-group-item-action px-3" href="{{ url_for('admin.books') }}">
+          📚 Quản lý kho sách
+        </a>
+        {% if has_endpoint('admin.requests') %}
+        <a class="list-group-item list-group-item-action px-3" href="{{ url_for('admin.requests') }}">
+          ⏳ Yêu cầu mượn / trả
+        </a>
+        {% endif %}
+        {% if has_endpoint('admin.users') %}
+        <a class="list-group-item list-group-item-action px-3" href="{{ url_for('admin.users') }}">
+          👥 Thành viên
+        </a>
+        {% endif %}
+        <a class="list-group-item list-group-item-action px-3" href="{{ url_for('admin.categories') }}">
+          🏷️ Danh mục
+        </a>
+        {% if has_endpoint('admin.audit') %}
+        <a class="list-group-item list-group-item-action px-3" href="{{ url_for('admin.audit') }}">
+          📝 Nhật ký hệ thống
+        </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

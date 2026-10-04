@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block title %}Danh mục – Quản trị{% endblock %}
+{% block content %}
+<h1 class="h4 fw-bold mb-4">Quản lý danh mục</h1>
+
+<div class="row g-4">
+  <div class="col-lg-4">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white fw-semibold py-3">Thêm danh mục mới</div>
+      <div class="card-body">
+        <form method="post" action="{{ url_for('admin.category_add') }}" class="d-flex gap-2">
+          <input class="form-control" name="name" placeholder="Tên danh mục, ví dụ: Triết học"
+                 required maxlength="100">
+          <button class="btn btn-primary text-nowrap">
+            <i class="bi bi-plus-lg me-1"></i>Thêm
+          </button>
+        </form>
+        <p class="small text-muted mt-3 mb-0">
+          Danh mục giúp người dùng dễ dàng phân loại và tìm sách.
+        </p>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm">
+      <div class="table-responsive">
+        <table class="table align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th style="width: 60px;">#</th>
+              <th>Tên danh mục</th>
+              <th>Số sách</th>
+              <th class="text-end">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in items %}
+            <tr>
+              <td class="text-muted">{{ loop.index }}</td>
+              <td class="fw-semibold">{{ item.category.name }}</td>
+              <td><span class="badge bg-light text-dark border">{{ item.count }} sách</span></td>
+              <td class="text-end text-nowrap">
+                <form class="d-inline-flex gap-1"
+                      method="post" action="{{ url_for('admin.category_rename', cat_id=item.category.id) }}">
+                  <input class="form-control form-control-sm" style="width: 190px;"
+                         name="name" value="{{ item.category.name }}" required maxlength="100">
+                  <button class="btn btn-sm btn-outline-primary">Đổi tên</button>
+                </form>
+                <form method="post" action="{{ url_for('admin.category_delete', cat_id=item.category.id) }}"
+                      class="d-inline"
+                      data-confirm="Xóa danh mục “{{ item.category.name }}”?">
+                  <button class="btn btn-sm btn-outline-danger"
+                          {{ 'disabled' if item.count > 0 }}>Xóa</button>
+                </form>
+              </td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="4" class="text-center text-muted py-4">Chưa có danh mục nào.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

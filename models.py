@@ -1,7 +1,7 @@
 """Các model cơ sở dữ liệu của Thư viện Số."""
 from datetime import datetime
 
-from flask import url_for
+from flask import has_request_context, url_for
 from flask_login import UserMixin
 from sqlalchemy import func
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -106,7 +106,11 @@ class Book(db.Model):
     @property
     def cover(self):
         """URL ảnh bìa (kèm ảnh mặc định khi chưa có)."""
-        return self.cover_url or url_for('static', filename='covers/default.svg')
+        if self.cover_url:
+            return self.cover_url
+        if has_request_context():
+            return url_for('static', filename='covers/default.svg')
+        return '/static/covers/default.svg'
 
     def __repr__(self):
         return f'<Book {self.title}>'

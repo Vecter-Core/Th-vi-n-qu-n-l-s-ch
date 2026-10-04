@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% block title %}Kho sách – Quản trị{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+  <h1 class="h4 fw-bold mb-0">
+    Quản lý kho sách <span class="text-muted fw-normal">({{ books|length }} đầu)</span>
+  </h1>
+  <a href="{{ url_for('admin.book_add') }}" class="btn btn-primary">
+    <i class="bi bi-plus-lg me-1"></i>Thêm sách mới
+  </a>
+</div>
+
+<form class="row g-2 mb-3" method="get">
+  <div class="col-md-5">
+    <input class="form-control" name="q" placeholder="Tìm theo tên sách, tác giả…" value="{{ q }}">
+  </div>
+  <div class="col-md-4">
+    <select class="form-select" name="category">
+      <option value="">Tất cả danh mục</option>
+      {% for c in categories %}
+      <option value="{{ c.id }}" {% if c.id == category_id %}selected{% endif %}>{{ c.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-md-3 d-flex gap-1">
+    <button class="btn btn-outline-primary">Lọc</button>
+    {% if q or category_id %}
+    <a class="btn btn-outline-secondary" href="{{ url_for('admin.books') }}">Xóa lọc</a>
+    {% endif %}
+  </div>
+</form>
+
+<div class="card border-0 shadow-sm">
+  <div class="table-responsive">
+    <table class="table align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th style="width: 60px;">#</th>
+          <th style="width: 64px;">Ảnh</th>
+          <th>Tên sách</th>
+          <th>Tác giả</th>
+          <th>Danh mục</th>
+          <th>Tồn kho</th>
+          <th class="text-end">Thao tác</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for book in books %}
+        <tr>
+          <td class="text-muted">{{ loop.index }}</td>
+          <td><img src="{{ book.cover }}" class="thumb-sm" alt=""></td>
+          <td>
+            <div class="fw-semibold">{{ book.title }}</div>
+            <small class="text-muted">Mã: #{{ book.id }}</small>
+          </td>
+          <td class="text-muted">{{ book.author }}</td>
+          <td>
+            {% if book.category %}
+            <span class="badge bg-light text-dark border">{{ book.category.name }}</span>
+            {% else %}—{% endif %}
+          </td>
+          <td>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              <span class="badge {{ 'bg-success-subtle text-success' if book.in_stock else 'bg-danger-subtle text-danger' }}">
+                {{ book.available }}/{{ book.quantity }}
+              </span>
+              <form class="d-flex align-items-center gap-1"
+                    method="post" action="{{ url_for('admin.book_set_quantity', book_id=book.id) }}">
+                <input type="number" name="quantity" class="form-control form-control-sm"
+                       style="width: 70px;" min="0" value="{{ book.quantity }}">
+                <button class="btn btn-sm btn-outline-secondary" title="Cập nhật số lượng">✓</button>
+              </form>
+            </div>
+          </td>
+          <td class="text-end text-nowrap">
+            <a href="{{ url_for('admin.book_edit', book_id=book.id) }}"
+               class="btn btn-sm btn-outline-primary">Sửa</a>
+            <form method="post" action="{{ url_for('admin.book_delete', book_id=book.id) }}"
+                  class="d-inline" data-confirm="Xóa sách “{{ book.title }}” khỏi kho?">
+              <button class="btn btn-sm btn-outline-danger">Xóa</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="7" class="text-center text-muted py-4">Chưa có sách nào trong kho.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
