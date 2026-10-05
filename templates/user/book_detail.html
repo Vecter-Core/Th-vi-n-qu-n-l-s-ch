@@ -154,22 +154,30 @@
     </a>
     {% else %}
     <div class="d-flex flex-wrap gap-2">
-      <form method="post" action="{{ url_for('user.add_to_cart', book_id=book.id) }}"
-            {% if not book.in_stock %}style="visibility:hidden;opacity:0"{% endif %}>
+      {% if book.in_stock %}
+      <form method="post" action="{{ url_for('user.add_to_cart', book_id=book.id) }}">
         <input type="hidden" name="next" value="{{ request.path }}">
         <button class="btn btn-primary px-4 py-2">
           <i class="bi bi-bag-plus me-2"></i>Thêm vào giỏ mượn
         </button>
       </form>
+      {% else %}
+      {# Hết bản: nút Xếp hàng THẬT (route join_waitlist) — thay cho form ẩn vô dụng #}
+      <form method="post" action="{{ url_for('user.join_waitlist', book_id=book.id) }}">
+        <input type="hidden" name="next" value="{{ request.path }}">
+        <button class="btn btn-accent px-4 py-2">
+          <i class="bi bi-people me-2"></i>Xếp hàng chờ
+          {% if queue.waiting %}({{ queue.waiting }} người){% endif %}
+        </button>
+      </form>
+      <span class="stock stock-out fs-6 align-self-center">
+        <span class="dot"></span>Hết bản khả dụng
+      </span>
+      {% endif %}
       {% if cart_count %}
       <a href="{{ url_for('user.cart') }}" class="btn btn-outline-primary px-3 py-2">
         <i class="bi bi-bag me-1"></i>Xem giỏ ({{ cart_count }})
       </a>
-      {% endif %}
-      {% if not book.in_stock %}
-      <span class="stock stock-out fs-6 align-self-center">
-        <span class="dot"></span>Hết bản khả dụng
-      </span>
       {% endif %}
     </div>
     {% endif %}

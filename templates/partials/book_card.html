@@ -61,18 +61,44 @@
           {{ 'Còn ' ~ book.available ~ ' cuốn' if book.in_stock else 'Tạm hết bản' }}
         </span>
 
-        {% if current_user.is_authenticated %}
-        <form method="post" action="{{ url_for('user.add_to_cart', book_id=book.id) }}">
-          <input type="hidden" name="next" value="{{ request.full_path }}">
-          <button type="submit" class="btn btn-sm btn-outline-primary"
-                  title="Thêm vào giỏ mượn"
-                  {% if not book.in_stock %}disabled{% endif %}>
-            <i class="bi bi-bag-plus me-1"></i>Mượn
-          </button>
-        </form>
+        {% set my_status = active_statuses.get(book.id) if active_statuses is defined else none %}
+        {% if my_status %}
+          {# Người dùng đã có yêu cầu thật cho cuốn này — hiển thị trạng thái #}
+          {% if my_status == 'pending' %}
+          <span class="badge text-bg-warning" title="Bạn đang chờ thủ thư duyệt">
+            <i class="bi bi-hourglass-split me-1"></i>Đang chờ
+          </span>
+          {% elif my_status == 'return_pending' %}
+          <span class="badge text-bg-info" title="Đang chờ thủ thư nhận sách trả">
+            <i class="bi bi-arrow-return-left me-1"></i>Chờ trả
+          </span>
+          {% else %}
+          <span class="badge text-bg-success" title="Bạn đang mượn cuốn này">
+            <i class="bi bi-book-check me-1"></i>Đang mượn
+          </span>
+          {% endif %}
+        {% elif current_user.is_authenticated %}
+          {% if book.in_stock %}
+          <form method="post" action="{{ url_for('user.add_to_cart', book_id=book.id) }}">
+            <input type="hidden" name="next" value="{{ request.full_path }}">
+            <button type="submit" class="btn btn-sm btn-outline-primary"
+                    title="Thêm vào giỏ mượn">
+              <i class="bi bi-bag-plus me-1"></i>Mượn
+            </button>
+          </form>
+          {% else %}
+          {# Hết bản: nút Xếp hàng THẬT — gọi route join_waitlist, không còn disabled #}
+          <form method="post" action="{{ url_for('user.join_waitlist', book_id=book.id) }}">
+            <input type="hidden" name="next" value="{{ request.full_path }}">
+            <button type="submit" class="btn btn-sm btn-accent"
+                    title="Xếp hàng chờ — sẽ được duyệt khi có bản trả về">
+              <i class="bi bi-people me-1"></i>Xếp hàng
+            </button>
+          </form>
+          {% endif %}
         {% else %}
         <a href="{{ url_for('auth.login', next=request.full_path) }}" class="btn btn-sm btn-outline-secondary"
-           title="Đăng nhập để mượn cuốn này">
+           title="Đăng nhập để mượn hoặc xếp hàng">
           <i class="bi bi-box-arrow-in-right me-1"></i>Mượn
         </a>
         {% endif %}

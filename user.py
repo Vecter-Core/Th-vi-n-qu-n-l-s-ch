@@ -113,6 +113,19 @@ def home():
         'total_categories': len(categories),
     }
 
+    # Trạng thái yêu cầu của user hiện tại theo từng cuốn (1 query cho cả trang)
+    # Dùng trong book_card để nút Mượn / Xếp hàng phản ánh đúng trạng thái thật.
+    active_statuses = {}
+    if current_user.is_authenticated:
+        active_statuses = dict(
+            db.session.query(BorrowRequest.book_id, BorrowRequest.status)
+            .filter(
+                BorrowRequest.user_id == current_user.id,
+                BorrowRequest.status.in_(['pending', 'approved', 'return_pending']),
+            )
+            .all()
+        )
+
     return render_template(
         'user/index.html',
         books=books,
@@ -124,6 +137,7 @@ def home():
         mood=mood,
         moods=MOODS,
         view=view,
+        active_statuses=active_statuses,
         filtering=filtering,
         stats=stats,
     )
@@ -237,6 +251,44 @@ def add_to_cart(book_id):
 
 
 BORROW_DAYS = 14
+
+
+@user_bp.route('/cho/<int:book_id>', methods=['POST'])
+@login_required
+def join_waitlist(book_id):
+    """Xếp hàng chờ mượn sách khi hết bản — Human Queue.
+    Tạo phiếu 'pending'; thủ thư sẽ duyệt theo thứ tự khi có bản trả về kho."""
+    book = db.get_or_404(Book, book_id)
+    next_url = request.args.get('next') or request.referrer or url_for(
+        'user.book_detail', book_id=book.id
+    )
+
+    if book.in_stock:
+        flash(f'“{book.title}” hiện còn bản trên kệ — hãy bấm Mượn ngay.', 'info')
+        return redirect(next_url)
+
+    if _active_request(current_user, book_id):
+        flash(f'Bạn đã có yêu cầu cho “{book.title}” đang trong tiến trình xử lý.', 'info')
+    else:
+        db.session.add(
+            BorrowRequest(
+                user_id=current_user.id,
+                book_id=book.id,
+                status=BorrowRequest.PENDING,
+                requested_at=datetime.now(),
+                note='Xếp hàng chờ (sách đang hết bản)',
+            )
+        )
+        db.session.commit()
+        position = BorrowRequest.query.filter_by(
+            book_id=book.id, status=BorrowRequest.PENDING
+        ).count()
+        flash(
+            f'Đã xếp hàng chờ “{book.title}”. Bạn đứng thứ {position} trong hàng chờ — '
+            'khi có bản trả về, thủ thư sẽ duyệt theo thứ tự.',
+            'success',
+        )
+    return redirect(next_url)
 
 
 @user_bp.route('/gio')

@@ -39,7 +39,7 @@
               <option value="">-- Chưa phân loại --</option>
               {% for cat in categories %}
               <option value="{{ cat.id }}"
-                {% if (f.get('category_id')|string == cat.id|string) if f else (book and book.category_id == cat.id) %}selected{% endif %}>
+                {% if (f.get('category_id') is not none and f.get('category_id')|string == cat.id|string) or (book and book.category_id == cat.id) %}selected{% endif %}>
                 {{ cat.name }}
               </option>
               {% endfor %}
