@@ -35,6 +35,80 @@
 
     <div class="book-description mb-4">{{ book.description }}</div>
 
+    {# ============ Góc Thủ thư & Ghi chú tay (Sticky Note) ============ #}
+    {% if book.librarian_note %}
+    <div class="detail-note mb-4">
+      <div class="detail-note-tape" aria-hidden="true"></div>
+      <div class="detail-note-label"><i class="bi bi-pin-angle me-1"></i>Ghi chú của {{ book.librarian_note_by or 'thủ thư' }}</div>
+      <p class="detail-note-text">{{ book.librarian_note }}</p>
+    </div>
+    {% endif %}
+
+    {# ============ Hàng chờ Mượn sách — "Hơi thở con người" ============ #}
+    <div class="human-queue mb-4">
+      {% if queue.holder %}
+      <div class="hq-row">
+        <span class="hq-ic hq-ic-busy"><i class="bi bi-person-book"></i></span>
+        <div class="hq-text">
+          Sách đang nằm trên bàn đọc của <b>{{ queue.holder }}</b>
+          {%- if queue.days_left is not none %}
+          (còn <b>{{ queue.days_left }}</b> ngày nữa trả).
+          {%- else %}đang được đọc.
+          {%- endif %}
+          {% if book.in_stock %}Vẫn còn <b>{{ book.available }}</b> bản khác trên kệ.
+          {% else %}Hiện tất cả bản đều đang ra ngoài.{% endif %}
+          {% if queue.waiting %}
+          Đã có <b>{{ queue.waiting }}</b> người xếp hàng chờ.
+          {% endif %}
+        </div>
+      </div>
+      {% elif not book.in_stock %}
+      <div class="hq-row">
+        <span class="hq-ic hq-ic-busy"><i class="bi bi-hourglass-split"></i></span>
+        <div class="hq-text">Tất cả bản đang được mượn.
+          {% if queue.waiting %}Đã có <b>{{ queue.waiting }}</b> người xếp hàng chờ.{% endif %}
+        </div>
+      </div>
+      {% else %}
+      <div class="hq-row">
+        <span class="hq-ic hq-ic-free"><i class="bi bi-check2-circle"></i></span>
+        <div class="hq-text">
+          {% if book.available == book.quantity %}Toàn bộ <b>{{ book.quantity }}</b> bản đang ở trên kệ — sẵn sàng cho bạn.
+          {% else %}Còn <b>{{ book.available }}</b> bản đang chờ bạn.
+          {% endif %}
+          {% if queue.waiting %}Đã có <b>{{ queue.waiting }}</b> người xếp hàng chờ.{% endif %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    {# ============ Dấu vết Thời gian & Lịch sử Truyền tay ============ #}
+    <div class="book-history mb-4">
+      <div class="bh-head">
+        <i class="bi bi-clock-history me-1"></i>Dấu vết thời gian
+      </div>
+      <div class="bh-grid">
+        <div class="bh-item">
+          <div class="bh-num">{{ book.times_borrowed or 0 }}</div>
+          <div class="bh-lab">người đọc từng qua tay cuốn này</div>
+        </div>
+        <div class="bh-item">
+          <div class="bh-num">{{ book.pages or '—' }}</div>
+          <div class="bh-lab">trang in{{ ' · khoảng ' ~ (book.pages / 200)|round(1, 'ceil')|int ~ ' giờ đọc' if book.pages else '' }}</div>
+        </div>
+        <div class="bh-item">
+          <div class="bh-num">{{ avg if count else '—' }}</div>
+          <div class="bh-lab">{{ count }} nhận xét từ cộng đồng</div>
+        </div>
+      </div>
+      {% if book.condition_note %}
+      <div class="bh-condition">
+        <span class="bh-cond-label">Tình trạng:</span>
+        {{ book.condition_note }}
+      </div>
+      {% endif %}
+    </div>
+
     <div class="row g-3 mb-4">
       <div class="col-6 col-md-3">
         <div class="detail-meta">

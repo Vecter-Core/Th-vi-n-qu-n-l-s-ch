@@ -72,6 +72,7 @@
     <h1 class="page-title">Kết quả tìm kiếm</h1>
     <p class="page-sub">
       {% if q %}Từ khóa: “<strong>{{ q }}</strong>” · {% endif %}
+      {% if mood and moods and mood in moods %}Tâm trạng: <strong>{{ moods[mood].phrase }}</strong> · {% endif %}
       Tìm thấy <strong>{{ books | length }}</strong> tác phẩm phù hợp
     </p>
   </div>
@@ -81,8 +82,58 @@
 </div>
 {% endif %}
 
+{# ============ Reading Mood Matcher — lọc theo cảm xúc ============ #}
+<section class="mood-matcher mb-4">
+  <div class="d-flex flex-wrap align-items-end justify-content-between gap-2 mb-3">
+    <div>
+      <span class="mood-kicker"><i class="bi bi-feather me-1"></i>Reading Mood Matcher</span>
+      <h2 class="section-title mb-0">Hôm nay bạn muốn đọc theo tâm trạng nào?</h2>
+    </div>
+    {% if mood %}
+    <a href="{{ url_for('user.home', q=q or None, category=category_id) }}"
+       class="btn btn-sm btn-outline-secondary">
+      <i class="bi bi-x-circle me-1"></i>Bỏ lọc tâm trạng
+    </a>
+    {% endif %}
+  </div>
+  <div class="mood-grid">
+    {% for key, m in moods.items() %}
+    <a class="mood-card {{ 'active' if mood == key }}"
+       href="{{ url_for('user.home', mood=(None if mood == key else key), q=q or None, category=category_id) }}">
+      <span class="mood-ic mood-ic-{{ key }}"><i class="bi {{ m.icon }}"></i></span>
+      <span class="mood-body">
+        <span class="mood-phrase">“{{ m.phrase }}”</span>
+        <span class="mood-desc">{{ m.desc }}</span>
+      </span>
+      <i class="bi bi-arrow-right mood-arrow"></i>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+
+{# ============ Công tắc chuyển Lưới / Kệ sách gỗ 3D ============ #}
+{% if books %}
+<div class="view-toolbar mb-3">
+  <div class="view-hint small text-muted">
+    <i class="bi bi-hand-index-thumb me-1"></i>{{ books|length }} tác phẩm — chọn cách bạn muốn nhìn
+  </div>
+  <div class="view-switch" role="group" aria-label="Kiểu hiển thị sách">
+    <button type="button" class="view-btn {{ 'active' if view != 'shelf' }}" data-view="grid"
+            title="Dạng lưới thẻ">
+      <i class="bi bi-grid-3x3-gap-fill"></i><span>Lưới</span>
+    </button>
+    <button type="button" class="view-btn {{ 'active' if view == 'shelf' }}" data-view="shelf"
+            title="Dạng kệ sách gỗ 3D">
+      <i class="bi bi-bookshelf"></i><span>Kệ gỗ</span>
+    </button>
+  </div>
+</div>
+{% endif %}
+
 <!-- Danh sách tác phẩm -->
 {% if books %}
+  {# ---- Dạng LƯỚI (Card Grid) ---- #}
+  <div id="view-grid" class="books-view {{ 'is-hidden' if view == 'shelf' }}">
   {% if filtering %}
   <div class="row row-cols-2 row-cols-sm-3 row-cols-lg-4 g-4">
     {% for book in books %}
@@ -107,6 +158,12 @@
   </section>
   {% endfor %}
   {% endif %}
+  </div>
+
+  {# ---- Dạng KỆ SÁCH GỖ 3D (Wood Shelf View) ---- #}
+  <div id="view-shelf" class="books-view {{ '' if view == 'shelf' else 'is-hidden' }}">
+    {% include 'partials/shelf.html' %}
+  </div>
 {% else %}
   {% if filtering %}
   <div class="empty-state">

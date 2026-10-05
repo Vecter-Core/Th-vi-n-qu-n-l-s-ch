@@ -1,0 +1,36 @@
+{# Kệ sách gỗ 3D (Wood Shelf View) — hiển thị gáy sách của danh sách `books`.
+   Mỗi cuốn là một "gáy" đứng trên tấm kệ gỗ, màu lấy từ spine_color.
+   Biến: books (danh sách flat) #}
+{% set shelf_rows = [] %}
+{% for b in books %}
+  {% if loop.index0 % 6 == 0 %}{% set _ = shelf_rows.append(books[loop.index0:loop.index0 + 6]) %}{% endif %}
+{% endfor %}
+
+<div class="wood-shelf">
+  {% for row in shelf_rows %}
+  <div class="shelf-unit">
+    <div class="shelf-books">
+      {% for book in row %}
+      <a class="spine {{ 'spine-out' if not book.in_stock }}"
+         href="{{ url_for('user.book_detail', book_id=book.id) }}"
+         style="--spine: {{ book.spine_color or '#6b4f2a' }}; --h: {{ 150 + (book.id * 13) % 70 }}px"
+         title="{{ book.title }} — {{ book.author }}">
+        <span class="spine-title">{{ book.title }}</span>
+        <span class="spine-author">{{ book.author }}</span>
+        {% if not book.in_stock %}<span class="spine-flag" title="Tạm hết bản"></span>{% endif %}
+      </a>
+      {% endfor %}
+    </div>
+    <div class="shelf-board" aria-hidden="true">
+      <span class="shelf-bracket shelf-bracket-l"></span>
+      <span class="shelf-bracket shelf-bracket-r"></span>
+    </div>
+    <div class="shelf-shadow" aria-hidden="true"></div>
+  </div>
+  {% endfor %}
+
+  <p class="shelf-caption small text-muted">
+    <i class="bi bi-hand-index-thumb me-1"></i>Di chuột lên gáy sách để xem, bấm để mở —
+    sắc độ gáy phản ánh màu bìa thật của từng cuốn.
+  </p>
+</div>

@@ -15,21 +15,29 @@
   --primary-surface: #f3f8f6;
   --primary-border: #cadfd7;
 
-  /* Nền & bề mặt giấy ấm */
-  --bg: #f8f6f0;
-  --bg-subtle: #f2efe7;
+  /* Nền & bề mặt giấy offset cổ điển (Warm & Paper Tones) */
+  --bg: #f7f4ef;
+  --bg-subtle: #f1ede4;
+  --paper: #fdfbf7;
   --card: #ffffff;
   --card-warm: #fbfaf6;
   --card-elevated: #ffffff;
-  --line: #e5e0d4;
-  --line-soft: #eeeadf;
-  --line-strong: #d2cbbd;
+  --line: #e7e1d5;
+  --line-soft: #efeade;
+  --line-strong: #d4ccbc;
 
-  /* Mực in & văn bản */
-  --ink: #171d22;
-  --ink-secondary: #3c454e;
-  --muted: #6f7a83;
-  --muted-light: #98a3ac;
+  /* Mực in cũ & màu gỗ trầm */
+  --ink: #1a1a1a;
+  --ink-secondary: #3b3630;
+  --wood: #2c2825;
+  --muted: #6f6a61;
+  --muted-light: #99938a;
+
+  /* Màu điểm nhấn amber / terracotta */
+  --accent: #c05621;
+  --accent-hover: #a5481b;
+  --accent-soft: #fbeee4;
+  --accent-border: #eed4c0;
 
   /* Tông màu hổ phách / hoàng kim thư viện */
   --gold: #b88628;
@@ -1476,3 +1484,598 @@ a:hover {
     grid-template-columns: 1fr;
   }
 }
+
+/* ==========================================================================
+   READING MOOD MATCHER — Lọc theo cảm xúc (Human UX)
+   ========================================================================== */
+.mood-matcher {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 22px 24px;
+  box-shadow: var(--shadow-sm);
+}
+.mood-kicker {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+.mood-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.mood-card {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 14px 16px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  color: var(--ink-secondary);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.mood-card::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 4px;
+  background: transparent;
+  transition: background 0.2s ease;
+}
+.mood-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--accent-border);
+  color: var(--ink);
+}
+.mood-card.active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  box-shadow: var(--shadow-md);
+}
+.mood-card.active::before { background: var(--accent); }
+.mood-ic {
+  width: 46px; height: 46px;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 21px;
+  flex-shrink: 0;
+  color: #fff;
+}
+.mood-ic-healing { background: linear-gradient(135deg, #c05621, #e08a4e); }
+.mood-ic-night   { background: linear-gradient(135deg, #2f3a56, #4a5a86); }
+.mood-ic-morning { background: linear-gradient(135deg, #8a5a1f, #c08a3e); }
+.mood-body { display: flex; flex-direction: column; min-width: 0; }
+.mood-phrase {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 600;
+  font-size: 14.5px;
+  color: var(--ink);
+  line-height: 1.3;
+}
+.mood-desc { font-size: 12px; color: var(--muted); line-height: 1.4; margin-top: 2px; }
+.mood-arrow { margin-left: auto; color: var(--muted-light); transition: transform 0.2s ease; }
+.mood-card:hover .mood-arrow { transform: translateX(4px); color: var(--accent); }
+.mood-card.active .mood-arrow { color: var(--accent); }
+
+.mood-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  white-space: nowrap;
+}
+.mood-tag-healing { background: var(--accent-soft); color: var(--accent-hover); }
+.mood-tag-night   { background: #eaeef7; color: #38405f; }
+.mood-tag-morning { background: #f7efdf; color: #7a5316; }
+.book-card-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+  min-height: 20px;
+}
+
+
+/* ==========================================================================
+   BOOK RIBBON — dải thẻ kẹp sách thò ra ngoài mép thẻ
+   ========================================================================== */
+.book-ribbon {
+  position: absolute;
+  top: -10px;
+  right: 26px;
+  width: 20px;
+  height: 46px;
+  background: var(--ribbon, #b88628);
+  z-index: 4;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.22);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 78%, 0 100%);
+  transition: top 0.22s ease;
+}
+.book-card:hover .book-ribbon { top: -16px; }
+.book-ribbon::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.28), transparent 45%, rgba(0, 0, 0, 0.16));
+}
+
+/* ==========================================================================
+   LIBRARIAN STICKY NOTE — ghi chú viết tay nghiêng nhẹ (Font Caveat)
+   ========================================================================== */
+.librarian-note {
+  margin: 0 0 12px;
+  padding: 10px 12px 9px;
+  background: #fdf6d8;
+  border: 1px solid #f2e6ae;
+  border-radius: 3px;
+  box-shadow: 2px 3px 8px rgba(120, 96, 20, 0.13);
+  transform: rotate(-1.1deg);
+  position: relative;
+  font-family: 'Caveat', 'Segoe Script', cursive;
+}
+.librarian-note::before {
+  content: "";
+  position: absolute;
+  top: -7px;
+  left: 50%;
+  transform: translateX(-50%) rotate(1.5deg);
+  width: 46px;
+  height: 14px;
+  background: rgba(224, 196, 108, 0.5);
+  border: 1px solid rgba(200, 170, 80, 0.35);
+}
+.librarian-note p {
+  margin: 0;
+  font-size: 16.5px;
+  line-height: 1.32;
+  color: #4a3d10;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.librarian-note cite {
+  display: block;
+  margin-top: 4px;
+  font-style: normal;
+  font-size: 14px;
+  color: #8a6d1f;
+  text-align: right;
+}
+.hand-trace { color: var(--muted); font-weight: 600; }
+.meta-dot { color: var(--line-strong); }
+
+.detail-note {
+  background: #fdf6d8;
+  border: 1px solid #f2e6ae;
+  border-radius: 4px;
+  padding: 18px 22px 16px;
+  transform: rotate(-0.5deg);
+  box-shadow: 3px 5px 14px rgba(120, 96, 20, 0.15);
+  position: relative;
+}
+.detail-note-tape {
+  position: absolute;
+  top: -9px;
+  left: 32px;
+  width: 84px;
+  height: 20px;
+  background: rgba(224, 196, 108, 0.55);
+  border: 1px solid rgba(200, 170, 80, 0.4);
+  transform: rotate(-2deg);
+}
+
+/* ==========================================================================
+   HUMAN QUEUE — hàng chờ mượn sách "hơi thở con người"
+   ========================================================================== */
+.human-queue {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--primary);
+  border-radius: var(--radius-sm);
+  padding: 14px 18px;
+}
+.hq-row { display: flex; align-items: flex-start; gap: 13px; }
+.hq-ic {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+  color: #fff;
+}
+.hq-ic-free { background: var(--ok); }
+.hq-ic-busy { background: var(--accent); }
+.hq-text { font-size: 14.5px; line-height: 1.55; color: var(--ink-secondary); padding-top: 7px; }
+.hq-text b { color: var(--ink); }
+
+/* ==========================================================================
+   BOOK HISTORY — Dấu vết thời gian & lịch sử truyền tay
+   ========================================================================== */
+.book-history {
+  background: var(--card-warm);
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-md);
+  padding: 18px 20px;
+}
+.bh-head {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--wood);
+  margin-bottom: 14px;
+}
+.bh-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 14px;
+}
+.bh-item {
+  text-align: center;
+  padding: 8px 6px;
+  background: var(--paper);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-sm);
+}
+.bh-num {
+  font-family: var(--font-serif);
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--accent);
+  line-height: 1.1;
+}
+.bh-lab { font-size: 11.5px; color: var(--muted); line-height: 1.35; margin-top: 3px; }
+.bh-condition {
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--ink-secondary);
+  background: var(--paper);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-sm);
+  padding: 11px 14px;
+  font-style: italic;
+}
+.bh-cond-label {
+  font-style: normal;
+  font-weight: 700;
+  color: var(--wood);
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  margin-right: 4px;
+}
+
+/* ==========================================================================
+   VIEW SWITCH — công tắc Lưới / Kệ sách gỗ 3D
+   ========================================================================== */
+.view-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 10px 16px;
+}
+.view-switch {
+  display: inline-flex;
+  background: var(--bg-subtle);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  padding: 4px;
+  gap: 4px;
+}
+.view-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: none;
+  background: transparent;
+  padding: 7px 16px;
+  border-radius: var(--radius-pill);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+.view-btn:hover { color: var(--ink); }
+.view-btn.active {
+  background: var(--wood);
+  color: #f5efe2;
+  box-shadow: var(--shadow-sm);
+}
+.books-view.is-hidden { display: none; }
+
+.detail-note-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #9a7b24;
+  margin-bottom: 6px;
+}
+.detail-note-text {
+  margin: 0;
+  font-family: 'Caveat', 'Segoe Script', cursive;
+  font-size: 24px;
+  line-height: 1.35;
+  color: #43370e;
+}
+
+
+/* ==========================================================================
+   WOOD SHELF 3D — Kệ sách gỗ hiển thị gáy sách đa sắc
+   ========================================================================== */
+.wood-shelf { display: flex; flex-direction: column; gap: 34px; }
+.shelf-unit { position: relative; padding-bottom: 6px; }
+.shelf-books {
+  display: flex;
+  align-items: flex-end;
+  gap: 5px;
+  padding: 0 22px;
+  min-height: 150px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+.spine {
+  position: relative;
+  flex: 0 0 auto;
+  width: 40px;
+  height: var(--h, 170px);
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.32) 0%, rgba(0, 0, 0, 0.05) 9%, rgba(255, 255, 255, 0.16) 22%, rgba(0, 0, 0, 0.04) 60%, rgba(0, 0, 0, 0.3) 100%),
+    var(--spine, #6b4f2a);
+  border-radius: 3px 5px 5px 3px;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.22), 3px 5px 10px rgba(0, 0, 0, 0.28);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 3px;
+  text-decoration: none;
+  color: #f3ead9;
+  transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.24s ease;
+  transform-origin: bottom center;
+}
+.spine::before {
+  content: "";
+  position: absolute;
+  top: 16%; left: 15%; right: 15%;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.4);
+}
+.spine::after {
+  content: "";
+  position: absolute;
+  bottom: 16%; left: 15%; right: 15%;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.4);
+}
+.spine:hover {
+  transform: translateY(-14px) rotateZ(-1.5deg);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25), 6px 12px 22px rgba(0, 0, 0, 0.36);
+  z-index: 3;
+}
+.spine-title {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  font-family: var(--font-serif);
+  font-size: 11.5px;
+  font-weight: 700;
+  line-height: 1;
+  max-height: 62%;
+  overflow: hidden;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+.spine-author {
+  writing-mode: vertical-rl;
+  font-size: 8.5px;
+  opacity: 0.72;
+  max-height: 24%;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.spine-out { filter: grayscale(0.55) brightness(0.7); }
+.spine-flag {
+  position: absolute;
+  top: 6px; left: 50%;
+  transform: translateX(-50%);
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: #d64545;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.6);
+}
+.shelf-board {
+  position: relative;
+  height: 20px;
+  background: linear-gradient(180deg, #a97b48 0%, #8a5f34 42%, #6e4a26 100%);
+  border-radius: 0 0 5px 5px;
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.3), inset 0 2px 3px rgba(255, 255, 255, 0.24);
+}
+.shelf-board::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.22);
+  border-radius: 3px 3px 0 0;
+}
+.shelf-bracket {
+  position: absolute;
+  bottom: -12px;
+  width: 14px; height: 14px;
+  background: #563a1e;
+  border-radius: 0 0 4px 4px;
+}
+.shelf-bracket-l { left: 26px; }
+.shelf-bracket-r { right: 26px; }
+.shelf-shadow {
+  height: 14px;
+  margin-top: 12px;
+  background: radial-gradient(ellipse at center, rgba(44, 40, 37, 0.26) 0%, transparent 72%);
+  filter: blur(2px);
+}
+.shelf-caption { text-align: center; margin-top: 4px; }
+
+
+/* ==========================================================================
+   READING NOOK MODE — trình phát âm thanh nền & Focus Mode
+   ========================================================================== */
+.nook { position: fixed; left: 22px; bottom: 22px; z-index: 1080; }
+.nook-fab {
+  width: 54px; height: 54px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(135deg, var(--wood) 0%, #4a423a 100%);
+  color: #f2e9d8;
+  font-size: 22px;
+  cursor: pointer;
+  box-shadow: 0 8px 22px rgba(44, 40, 37, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.nook-fab:hover { transform: translateY(-3px) scale(1.05); box-shadow: 0 12px 28px rgba(44, 40, 37, 0.5); }
+.nook-fab-dot {
+  position: absolute;
+  top: 4px; right: 4px;
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid #fff;
+  animation: nookPulse 1.8s ease-in-out infinite;
+}
+.nook-fab-dot[hidden] { display: none; }
+@keyframes nookPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.35); opacity: 0.7; }
+}
+.nook-panel {
+  position: absolute;
+  bottom: 66px; left: 0;
+  width: 264px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 16px;
+  animation: nookIn 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes nookIn {
+  from { opacity: 0; transform: translateY(14px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.nook-panel[hidden] { display: none; }
+.nook-head { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 13px; }
+.nook-title { font-family: var(--font-serif); font-weight: 700; font-size: 15.5px; color: var(--wood); }
+.nook-sub { font-size: 11.5px; color: var(--muted); }
+.nook-close {
+  border: none;
+  background: var(--bg-subtle);
+  border-radius: 50%;
+  width: 26px; height: 26px;
+  font-size: 12px;
+  color: var(--muted);
+  cursor: pointer;
+}
+.nook-close:hover { background: var(--line); color: var(--ink); }
+.nook-tracks { display: flex; flex-direction: column; gap: 8px; margin-bottom: 13px; }
+.nook-track {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  border-radius: var(--radius-sm);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink-secondary);
+  cursor: pointer;
+  transition: all 0.16s ease;
+  text-align: left;
+}
+.nook-track i { font-size: 16px; color: var(--muted); }
+.nook-track:hover { border-color: var(--accent-border); background: var(--accent-soft); }
+.nook-track.active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-hover);
+  box-shadow: var(--shadow-xs);
+}
+.nook-track.active i { color: var(--accent); }
+.nook-volume { display: flex; align-items: center; gap: 9px; margin-bottom: 13px; color: var(--muted); }
+.nook-volume input[type="range"] { flex: 1; accent-color: var(--accent); }
+.nook-focus {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px dashed var(--wood);
+  background: transparent;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--wood);
+  cursor: pointer;
+  transition: all 0.16s ease;
+  margin-bottom: 10px;
+}
+.nook-focus:hover { background: var(--wood); color: #f5efe2; }
+.nook-focus.active { background: var(--wood); color: #f5efe2; border-style: solid; }
+.nook-hint { font-size: 10.5px; color: var(--muted-light); margin: 0; line-height: 1.4; }
+
+/* ---- Focus Mode (Chế độ Tập trung) — tối giản giao diện ---- */
+body.focus-mode .site-footer,
+body.focus-mode .mood-matcher,
+body.focus-mode .view-toolbar { display: none !important; }
+body.focus-mode { background: var(--paper); }
+body.focus-mode .navbar { background: rgba(253, 251, 247, 0.9); box-shadow: none; }
+body.focus-mode .main-container { max-width: 860px; }
+body.focus-mode::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse 62% 62% at 50% 45%, transparent 0%, rgba(44, 40, 37, 0.08) 100%);
+  z-index: 1;
+}
+
+/* Bảng màu điểm nhấn terracotta cho chi tiết xúc giác */
+.hero-eyebrow {
+  background: rgba(192, 86, 33, 0.18);
+  border-color: rgba(224, 138, 78, 0.34);
+  color: #e6a063;
+}
+
+@media (max-width: 991.98px) {
+  .mood-grid { grid-template-columns: 1fr; }
+  .bh-grid { grid-template-columns: 1fr; }
+  .nook { left: 14px; bottom: 14px; }
+  .nook-panel { width: calc(100vw - 60px); max-width: 300px; }
+}
+@media (max-width: 575.98px) {
+  .view-toolbar { flex-direction: column; align-items: stretch; }
+  .view-switch { justify-content: center; }
+  .librarian-note p { -webkit-line-clamp: 3; }
+}
+

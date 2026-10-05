@@ -135,8 +135,13 @@ app = create_app()
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-        from seed import ensure_default_accounts, seed_if_empty
+        from models import migrate_schema
+        migrate_schema()
+        from seed import ensure_default_accounts, enrich_books, seed_if_empty
         seed_if_empty()
         ensure_default_accounts()
+        n = enrich_books()
+        if n:
+            print(f'[Enrich] Đã nạp dữ liệu xúc giác cho {n} cuốn sách.')
     app.run(host='127.0.0.1', port=5000, debug=True)
 

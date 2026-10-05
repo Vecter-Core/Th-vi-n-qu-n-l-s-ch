@@ -44,6 +44,29 @@ def _active_request(user, book_id):
     )
 
 
+# Bộ lọc theo tâm trạng đọc sách (Reading Mood Matcher)
+MOODS = {
+    'healing': {
+        'label': 'Cần chữa lành',
+        'desc': 'Sách nhẹ nhàng, tản văn cho ngày dài mệt mỏi.',
+        'icon': 'bi-heart',
+        'phrase': 'Cần chữa lành sau một ngày mệt mỏi',
+    },
+    'night': {
+        'label': 'Đọc hết trong đêm',
+        'desc': 'Sách mỏng, trinh thám dồn dập — đọc một mạch tới sáng.',
+        'icon': 'bi-moon-stars',
+        'phrase': 'Đọc hết trong một đêm',
+    },
+    'morning': {
+        'label': 'Cà phê sáng T7',
+        'desc': 'Sách tư duy, nghệ thuật nhâm nhi cuối tuần.',
+        'icon': 'bi-cup-hot',
+        'phrase': 'Uống cà phê sáng thứ Bảy',
+    },
+}
+
+
 @user_bp.route('/')
 def home():
     q = request.args.get('q', '').strip()
@@ -51,6 +74,12 @@ def home():
     status = request.args.get('status', '')
     if status not in ('in', 'out'):
         status = ''
+    mood = request.args.get('mood', '').strip()
+    if mood not in MOODS:
+        mood = ''
+    view = request.args.get('view', '').strip()
+    if view not in ('shelf', 'grid'):
+        view = 'grid'
 
     query = Book.query
     if q:
@@ -58,6 +87,8 @@ def home():
         query = query.filter(or_(Book.title.ilike(like), Book.author.ilike(like)))
     if category_id:
         query = query.filter(Book.category_id == category_id)
+    if mood:
+        query = query.filter(Book.mood == mood)
 
     books = query.order_by(Book.title).all()
     if status == 'in':
@@ -66,7 +97,7 @@ def home():
         books = [b for b in books if not b.in_stock]
 
     categories = Category.query.order_by(Category.name).all()
-    filtering = bool(q or category_id or status)
+    filtering = bool(q or category_id or status or mood)
 
     grouped = None
     if not filtering:
@@ -90,9 +121,38 @@ def home():
         q=q,
         category_id=category_id,
         status=status,
+        mood=mood,
+        moods=MOODS,
+        view=view,
         filtering=filtering,
         stats=stats,
     )
+
+
+def _human_queue(book):
+    """Thông tin hàng chờ 'người thật' cho một cuốn sách: ai đang giữ,
+    còn bao nhiêu ngày trả, và có bao nhiêu người đang xếp hàng chờ."""
+    holder = (
+        BorrowRequest.query.filter(
+            BorrowRequest.book_id == book.id,
+            BorrowRequest.status.in_(['approved', 'return_pending']),
+        )
+        .order_by(BorrowRequest.requested_at)
+        .first()
+    )
+    waiting = BorrowRequest.query.filter(
+        BorrowRequest.book_id == book.id,
+        BorrowRequest.status == 'pending',
+    ).count()
+
+    holder_name, days_left = None, None
+    if holder is not None:
+        holder_name = holder.user.username
+        if holder.due_date:
+            days_left = (holder.due_date.date() - datetime.now().date()).days
+        else:
+            days_left = BORROW_DAYS
+    return {'holder': holder_name, 'days_left': days_left, 'waiting': waiting}
 
 
 @user_bp.route('/sach/<int:book_id>')
@@ -118,6 +178,7 @@ def book_detail(book_id):
         count=count,
         active_request=active_request,
         my_review=my_review,
+        queue=_human_queue(book),
     )
 
 

@@ -1,6 +1,9 @@
 {# Thẻ sách chuyên nghiệp — Dùng ở trang chủ & kết quả tìm kiếm. Biến: book #}
 <div class="col">
-  <article class="book-card h-100">
+  <article class="book-card h-100 mood-{{ book.mood or 'none' }}">
+    {# Dải ribbon (thẻ kẹp sách) thò ra ngoài mép trên thẻ #}
+    <span class="book-ribbon" style="--ribbon: {{ book.spine_color or '#b88628' }}" aria-hidden="true"></span>
+
     <a href="{{ url_for('user.book_detail', book_id=book.id) }}" class="book-cover-wrap">
       <img src="{{ book.cover }}" alt="{{ book.title }}" class="book-cover" loading="lazy">
       {% if not book.in_stock %}
@@ -9,17 +12,32 @@
       </span>
       {% endif %}
     </a>
-    
+
     <div class="book-card-body">
-      {% if book.category %}
-      <div class="book-category-tag">{{ book.category.name }}</div>
-      {% endif %}
+      <div class="book-card-topline">
+        {% if book.category %}
+        <div class="book-category-tag">{{ book.category.name }}</div>
+        {% endif %}
+        {% if book.mood and moods is defined and book.mood in moods %}
+        <span class="mood-tag mood-tag-{{ book.mood }}" title="{{ moods[book.mood].phrase }}">
+          <i class="bi {{ moods[book.mood].icon }}"></i>{{ moods[book.mood].label }}
+        </span>
+        {% endif %}
+      </div>
 
       <h3 class="book-title">
         <a href="{{ url_for('user.book_detail', book_id=book.id) }}">{{ book.title }}</a>
       </h3>
       <p class="book-author">Tác giả: {{ book.author }}</p>
-      
+
+      {# Ghi chú viết tay của thủ thư (Sticky Note nghiêng nhẹ) #}
+      {% if book.librarian_note %}
+      <blockquote class="librarian-note" title="{{ book.librarian_note }}">
+        <p>{{ book.librarian_note }}</p>
+        <cite>— {{ book.librarian_note_by or 'Thủ thư' }}</cite>
+      </blockquote>
+      {% endif %}
+
       {% set avg_rating, rating_count = book.average_rating %}
       <div class="book-meta">
         {% if rating_count %}
@@ -28,6 +46,12 @@
         <span>({{ rating_count }} nhận xét)</span>
         {% else %}
         <span class="text-muted"><i class="bi bi-star me-1"></i>Chưa có đánh giá</span>
+        {% endif %}
+        {% if book.times_borrowed %}
+        <span class="meta-dot">·</span>
+        <span class="hand-trace" title="Cuốn sách này đã qua tay nhiều người đọc">
+          <i class="bi bi-arrow-repeat"></i> {{ book.times_borrowed }} lượt truyền tay
+        </span>
         {% endif %}
       </div>
 
