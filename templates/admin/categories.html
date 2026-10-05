@@ -1,35 +1,43 @@
 {% extends 'base.html' %}
-{% block title %}Danh mục – Quản trị{% endblock %}
+{% block title %}Quản lý danh mục — Quản trị Thư viện{% endblock %}
 {% block content %}
-<h1 class="h4 fw-bold mb-4">Quản lý danh mục</h1>
+<div class="page-head">
+  <div>
+    <h1 class="page-title">Danh mục &amp; Thể loại sách</h1>
+    <p class="page-sub">Phân loại các đầu sách theo chuyên ngành và chủ đề nghiên cứu.</p>
+  </div>
+</div>
 
 <div class="row g-4">
-  <div class="col-lg-4">
-    <div class="card border-0 shadow-sm">
-      <div class="card-header bg-white fw-semibold py-3">Thêm danh mục mới</div>
-      <div class="card-body">
-        <form method="post" action="{{ url_for('admin.category_add') }}" class="d-flex gap-2">
-          <input class="form-control" name="name" placeholder="Tên danh mục, ví dụ: Triết học"
-                 required maxlength="100">
-          <button class="btn btn-primary text-nowrap">
-            <i class="bi bi-plus-lg me-1"></i>Thêm
-          </button>
-        </form>
-        <p class="small text-muted mt-3 mb-0">
-          Danh mục giúp người dùng dễ dàng phân loại và tìm sách.
-        </p>
-      </div>
+  <div class="col-lg-5">
+    <div class="card p-4">
+      <h5 class="fw-bold mb-3"><i class="bi bi-plus-circle text-primary me-2"></i>Thêm thể loại mới</h5>
+      <form method="post" action="{{ url_for('admin.category_add') }}">
+        <div class="mb-3">
+          <label for="cat-name" class="form-label">Tên thể loại / Danh mục</label>
+          <input type="text" id="cat-name" name="name" class="form-control" required
+                 placeholder="Ví dụ: Khoa học công nghệ, Triết học...">
+        </div>
+        <button type="submit" class="btn btn-primary w-100">
+          <i class="bi bi-check-lg me-1"></i>Thêm danh mục
+        </button>
+      </form>
     </div>
   </div>
-  <div class="col-lg-8">
-    <div class="card border-0 shadow-sm">
+
+  <div class="col-lg-7">
+    <div class="card overflow-hidden">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span>Danh sách thể loại hiện hành</span>
+        <span class="badge bg-secondary">{{ items|length }} thể loại</span>
+      </div>
       <div class="table-responsive">
-        <table class="table align-middle mb-0">
-          <thead class="table-light">
+        <table class="table align-middle">
+          <thead>
             <tr>
-              <th style="width: 60px;">#</th>
-              <th>Tên danh mục</th>
-              <th>Số sách</th>
+              <th style="width: 50px;">#</th>
+              <th>Tên thể loại</th>
+              <th>Số lượng đầu sách</th>
               <th class="text-end">Thao tác</th>
             </tr>
           </thead>
@@ -37,21 +45,25 @@
             {% for item in items %}
             <tr>
               <td class="text-muted">{{ loop.index }}</td>
-              <td class="fw-semibold">{{ item.category.name }}</td>
-              <td><span class="badge bg-light text-dark border">{{ item.count }} sách</span></td>
-              <td class="text-end text-nowrap">
-                <form class="d-inline-flex gap-1"
-                      method="post" action="{{ url_for('admin.category_rename', cat_id=item.category.id) }}">
-                  <input class="form-control form-control-sm" style="width: 190px;"
-                         name="name" value="{{ item.category.name }}" required maxlength="100">
-                  <button class="btn btn-sm btn-outline-primary">Đổi tên</button>
-                </form>
+              <td>
+                <span class="fw-semibold text-dark">{{ item.category.name }}</span>
+              </td>
+              <td>
+                <span class="badge bg-primary">{{ item.count }} cuốn</span>
+              </td>
+              <td class="text-end">
+                {% if item.count == 0 %}
                 <form method="post" action="{{ url_for('admin.category_delete', cat_id=item.category.id) }}"
-                      class="d-inline"
-                      data-confirm="Xóa danh mục “{{ item.category.name }}”?">
-                  <button class="btn btn-sm btn-outline-danger"
-                          {{ 'disabled' if item.count > 0 }}>Xóa</button>
+                      class="d-inline" data-confirm="Xóa thể loại “{{ item.category.name }}”?">
+                  <button class="btn btn-sm btn-outline-danger">
+                    <i class="bi bi-trash me-1"></i>Xóa
+                  </button>
                 </form>
+                {% else %}
+                <span class="text-muted small" title="Không thể xóa khi còn sách trong danh mục">
+                  <i class="bi bi-lock me-1"></i>Đang chứa sách
+                </span>
+                {% endif %}
               </td>
             </tr>
             {% else %}

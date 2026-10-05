@@ -1,92 +1,134 @@
 {% extends 'base.html' %}
-{% block title %}Tủ sách của tôi – Thư viện Số{% endblock %}
+{% block title %}Tủ sách của tôi — Thư viện Số{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-  <h1 class="h4 fw-bold mb-0">Tủ sách của tôi</h1>
-  <span class="text-muted small">Xin chào, <b>{{ current_user.username }}</b></span>
+<div class="page-head">
+  <div>
+    <div class="d-flex align-items-center gap-2 mb-1">
+      <span class="user-badge-mini user-badge-user">Thẻ độc giả #{{ current_user.id }}</span>
+      <span class="text-muted small">· Tham gia từ {{ current_user.created_at|fmt_date }}</span>
+    </div>
+    <h1 class="page-title">Tủ sách cá nhân của {{ current_user.username }}</h1>
+    <p class="page-sub">Theo dõi các tác phẩm bạn đang mượn, yêu cầu chờ xét duyệt và lịch sử đọc sách.</p>
+  </div>
+  <a href="{{ url_for('user.home') }}" class="btn btn-outline-primary btn-sm">
+    <i class="bi bi-search me-1"></i>Khám phá thêm sách mới
+  </a>
 </div>
 
+<!-- 3 Thẻ thống kê độc giả -->
 <div class="row g-3 mb-4">
-  <div class="col-4">
-    <div class="card border-0 shadow-sm text-center p-3 stat-card">
-      <div class="fs-2 fw-bold text-primary">{{ counts.borrowing }}</div>
-      <div class="small text-muted">Đang mượn</div>
+  <div class="col-12 col-sm-4">
+    <div class="stat-card">
+      <div class="stat-ic"><i class="bi bi-journal-check"></i></div>
+      <div>
+        <div class="stat-num">{{ counts.borrowing }}</div>
+        <div class="stat-label">Sách đang mượn đọc</div>
+      </div>
     </div>
   </div>
-  <div class="col-4">
-    <div class="card border-0 shadow-sm text-center p-3 stat-card">
-      <div class="fs-2 fw-bold text-warning">{{ counts.pending }}</div>
-      <div class="small text-muted">Chờ duyệt</div>
+  <div class="col-6 col-sm-4">
+    <div class="stat-card">
+      <div class="stat-ic warn"><i class="bi bi-hourglass-split"></i></div>
+      <div>
+        <div class="stat-num">{{ counts.pending }}</div>
+        <div class="stat-label">Yêu cầu chờ thủ thư duyệt</div>
+      </div>
     </div>
   </div>
-  <div class="col-4">
-    <div class="card border-0 shadow-sm text-center p-3 stat-card">
-      <div class="fs-2 fw-bold text-success">{{ counts.returned }}</div>
-      <div class="small text-muted">Đã trả</div>
+  <div class="col-6 col-sm-4">
+    <div class="stat-card">
+      <div class="stat-ic ok"><i class="bi bi-check2-circle"></i></div>
+      <div>
+        <div class="stat-num">{{ counts.returned }}</div>
+        <div class="stat-label">Cuốn đã hoàn trả thành công</div>
+      </div>
     </div>
   </div>
 </div>
 
-<ul class="nav nav-pills mb-3" role="tablist">
+<!-- Tab điều hướng trạng thái -->
+<ul class="nav tabs-line" role="tablist">
   <li class="nav-item" role="presentation">
     <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#tab-active"
-            type="button" role="tab">Đang mượn & chờ duyệt</button>
+            type="button" role="tab">
+      <i class="bi bi-book-half me-1"></i>Đang mượn &amp; Chờ duyệt
+      <span class="tab-count">{{ active|length }}</span>
+    </button>
   </li>
   <li class="nav-item" role="presentation">
     <button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-history"
-            type="button" role="tab">Lịch sử</button>
+            type="button" role="tab">
+      <i class="bi bi-clock-history me-1"></i>Lịch sử mượn trả
+      <span class="tab-count">{{ history|length }}</span>
+    </button>
   </li>
 </ul>
 
 <div class="tab-content">
+  <!-- Tab 1: Đang mượn & Chờ duyệt -->
   <div class="tab-pane fade show active" id="tab-active" role="tabpanel">
     {% if active %}
-    <div class="card border-0 shadow-sm">
+    <div class="card overflow-hidden">
       <div class="table-responsive">
-        <table class="table align-middle mb-0">
-          <thead class="table-light">
+        <table class="table align-middle">
+          <thead>
             <tr>
-              <th style="width: 70px;">Ảnh</th>
-              <th>Sách</th>
-              <th>Ngày yêu cầu</th>
-              <th>Trạng thái</th>
-              <th>Hạn trả</th>
-              <th class="text-end">Thao tác</th>
+              <th style="width: 70px;">Bìa sách</th>
+              <th>Tên tác phẩm &amp; Tác giả</th>
+              <th>Ngày gửi yêu cầu</th>
+              <th>Trạng thái hiện tại</th>
+              <th>Hạn trả quy định</th>
+              <th class="text-end">Hành động</th>
             </tr>
           </thead>
           <tbody>
             {% for r in active %}
             <tr>
-              <td><img src="{{ r.book.cover }}" class="cart-thumb" alt=""></td>
               <td>
-                <a class="fw-semibold text-decoration-none"
-                   href="{{ url_for('user.book_detail', book_id=r.book_id) }}">{{ r.book.title }}</a>
+                <a href="{{ url_for('user.book_detail', book_id=r.book_id) }}">
+                  <img src="{{ r.book.cover }}" class="cart-thumb" alt="{{ r.book.title }}">
+                </a>
+              </td>
+              <td>
+                <a class="fw-bold text-dark text-decoration-none"
+                   href="{{ url_for('user.book_detail', book_id=r.book_id) }}">
+                  {{ r.book.title }}
+                </a>
+                <div class="small text-muted fst-italic">{{ r.book.author }}</div>
               </td>
               <td class="text-muted">{{ r.requested_at|fmt_date }}</td>
               <td>
-                <span class="badge bg-{{ status_colors[r.status] }}">{{ status_labels[r.status] }}</span>
+                <span class="badge bg-{{ status_colors[r.status] }}">
+                  {{ status_labels[r.status] }}
+                </span>
               </td>
               <td>
                 {% if r.due_date %}
-                <span class="{{ 'text-danger fw-bold' if r.status == 'approved' and r.due_date < now() else 'text-muted' }}">
-                  {{ r.due_date|fmt_date }}
-                </span>
-                {% if r.status == 'approved' and r.due_date < now() %}
-                <span class="badge bg-danger ms-1">Quá hạn</span>
+                  {% set is_overdue = (r.status == 'approved' and r.due_date < now()) %}
+                  <span class="{{ 'text-danger fw-bold' if is_overdue else 'text-dark' }}">
+                    {{ r.due_date|fmt_date }}
+                  </span>
+                  {% if is_overdue %}
+                  <span class="badge bg-danger ms-1">Đã quá hạn</span>
+                  {% endif %}
+                {% else %}
+                  <span class="text-muted small">—</span>
                 {% endif %}
-                {% else %}—{% endif %}
               </td>
               <td class="text-end">
                 {% if r.status == 'approved' %}
-                <form method="post" action="{{ url_for('user.request_return', req_id=r.id) }}">
-                  <button class="btn btn-sm btn-outline-primary">
+                <form method="post" action="{{ url_for('user.request_return', req_id=r.id) }}"
+                      data-confirm="Xác nhận gửi yêu cầu trả cuốn sách “{{ r.book.title }}”?">
+                  <button class="btn btn-sm btn-outline-primary shadow-xs">
                     <i class="bi bi-arrow-return-left me-1"></i>Yêu cầu trả sách
                   </button>
                 </form>
                 {% elif r.status == 'return_pending' %}
-                <span class="text-muted small">Chờ quản trị xác nhận</span>
+                <span class="badge bg-info-subtle text-info border">
+                  <i class="bi bi-hourglass-split me-1"></i>Đang chờ thủ thư nhận
+                </span>
                 {% else %}
-                <span class="text-muted small">Chờ quản trị xem xét</span>
+                <span class="text-muted small">Đang chờ xét duyệt</span>
                 {% endif %}
               </td>
             </tr>
@@ -96,40 +138,52 @@
       </div>
     </div>
     {% else %}
-    <div class="text-center py-5 empty-state">
-      <div class="fs-1 mb-3">📖</div>
-      <h5 class="fw-bold">Bạn chưa mượn cuốn sách nào</h5>
-      <p class="text-muted mb-3">Chọn sách yêu thích và gửi yêu cầu mượn ngay!</p>
-      <a href="{{ url_for('user.home') }}" class="btn btn-primary">Khám phá sách</a>
+    <div class="empty-state card">
+      <div class="empty-ic"><i class="bi bi-journal-bookmark-fill"></i></div>
+      <h2 class="section-title">Bạn hiện không có sách nào đang mượn</h2>
+      <p class="text-muted mb-4">Hãy chọn những cuốn sách tâm đắc trong kho sách và gửi yêu cầu mượn ngay hôm nay!</p>
+      <a href="{{ url_for('user.home') }}" class="btn btn-primary">
+        <i class="bi bi-compass me-1"></i>Khám phá kho sách
+      </a>
     </div>
     {% endif %}
   </div>
 
+  <!-- Tab 2: Lịch sử -->
   <div class="tab-pane fade" id="tab-history" role="tabpanel">
     {% if history %}
-    <div class="card border-0 shadow-sm">
+    <div class="card overflow-hidden">
       <div class="table-responsive">
-        <table class="table align-middle mb-0">
-          <thead class="table-light">
+        <table class="table align-middle">
+          <thead>
             <tr>
-              <th style="width: 70px;">Ảnh</th>
-              <th>Sách</th>
+              <th style="width: 70px;">Bìa sách</th>
+              <th>Tên tác phẩm</th>
               <th>Ngày yêu cầu</th>
-              <th>Kết quả</th>
-              <th>Hoàn thành</th>
+              <th>Kết quả xử lý</th>
+              <th>Thời điểm hoàn tất</th>
             </tr>
           </thead>
           <tbody>
             {% for r in history %}
             <tr>
-              <td><img src="{{ r.book.cover }}" class="cart-thumb" alt=""></td>
               <td>
-                <a class="fw-semibold text-decoration-none"
-                   href="{{ url_for('user.book_detail', book_id=r.book_id) }}">{{ r.book.title }}</a>
+                <a href="{{ url_for('user.book_detail', book_id=r.book_id) }}">
+                  <img src="{{ r.book.cover }}" class="cart-thumb" alt="{{ r.book.title }}">
+                </a>
+              </td>
+              <td>
+                <a class="fw-bold text-dark text-decoration-none"
+                   href="{{ url_for('user.book_detail', book_id=r.book_id) }}">
+                  {{ r.book.title }}
+                </a>
+                <div class="small text-muted">{{ r.book.author }}</div>
               </td>
               <td class="text-muted">{{ r.requested_at|fmt_date }}</td>
               <td>
-                <span class="badge bg-{{ status_colors[r.status] }}">{{ status_labels[r.status] }}</span>
+                <span class="badge bg-{{ status_colors[r.status] }}">
+                  {{ status_labels[r.status] }}
+                </span>
               </td>
               <td class="text-muted">
                 {{ (r.returned_at or r.decided_at)|fmt_date }}
@@ -141,10 +195,10 @@
       </div>
     </div>
     {% else %}
-    <div class="text-center py-5 empty-state">
-      <div class="fs-1 mb-3">🕓</div>
-      <h5 class="fw-bold">Chưa có lịch sử mượn sách</h5>
-      <p class="text-muted">Các đơn đã trả hoặc bị từ chối sẽ hiển thị tại đây.</p>
+    <div class="empty-state card">
+      <div class="empty-ic"><i class="bi bi-clock-history"></i></div>
+      <h2 class="section-title">Chưa có lịch sử mượn trả</h2>
+      <p class="text-muted">Các phiếu mượn sau khi hoàn tất trả sách hoặc bị từ chối sẽ được lưu trữ tại đây.</p>
     </div>
     {% endif %}
   </div>

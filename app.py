@@ -3,7 +3,8 @@ Thư viện Số — Ứng dụng quản lý thư viện số (Flask + SQLite/SQ
 
 Chạy ứng dụng:   python app.py
 Truy cập:        http://127.0.0.1:5000
-Quản trị viên:   admin / admin123
+Quản trị viên:   admin / admin123   (đăng nhập vào khu quản trị /admin)
+Thành viên:      user  / user123    (đăng nhập vào giao diện người dùng)
 """
 import os
 import sys
@@ -134,6 +135,8 @@ app = create_app()
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-        from seed import seed_if_empty
+        from seed import ensure_default_accounts, seed_if_empty
         seed_if_empty()
+        ensure_default_accounts()
     app.run(host='127.0.0.1', port=5000, debug=True)
+

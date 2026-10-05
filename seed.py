@@ -92,20 +92,20 @@ SEED_BOOKS = [
     },
 ]
 
-# Bộ màu (đầu, cuối) cho ảnh bìa SVG của từng cuốn sách
+# Bộ màu (đầu, cuối) cho ảnh bìa SVG — tông trầm, giống bìa sách in thực tế
 PALETTES = [
-    ('#1a237e', '#3949ab'),  # 1 - xanh chàm
-    ('#c62828', '#ef5350'),  # 2 - đỏ
-    ('#263238', '#546e7a'),  # 3 - xám than
-    ('#00695c', '#26a69a'),  # 4 - xanh rêu
-    ('#e65100', '#ffb74d'),  # 5 - cam hổ phách
-    ('#4a148c', '#8e24aa'),  # 6 - tím
-    ('#01579b', '#4fc3f7'),  # 7 - xanh dương
-    ('#212121', '#757575'),  # 8 - đen - xám
-    ('#004d40', '#00897b'),  # 9 - xanh nước biển thẫm
-    ('#1b1b1b', '#5d4037'),  # 10 - nâu đen
-    ('#0a0e33', '#1a2980'),  # 11 - xanh đêm
-    ('#880e4f', '#d81b60'),  # 12 - hồng cánh sen
+    ('#243447', '#3d5670'),  # 1 - xanh thép
+    ('#5e2a22', '#8a4a3d'),  # 2 - oxblood
+    ('#2f3a3a', '#556565'),  # 3 - xám than
+    ('#275245', '#41795f'),  # 4 - xanh rừng
+    ('#7a4a1f', '#a86f35'),  # 5 - hổ phách đậm
+    ('#43305e', '#6a4f8b'),  # 6 - tím than
+    ('#1f4e5f', '#357084'),  # 7 - xanh biển sẫm
+    ('#26282b', '#5a5f66'),  # 8 - đen chì
+    ('#1e4d43', '#397f68'),  # 9 - xanh ngọc trầm
+    ('#4a3324', '#7a5c41'),  # 10 - nâu cà phê
+    ('#16233f', '#2c4470'),  # 11 - xanh đêm
+    ('#5a2333', '#8a4055'),  # 12 - rượu vang
 ]
 
 COVERS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'covers')
@@ -137,18 +137,18 @@ def _wrap(text, width=16):
 
 
 def make_cover_svg(index, book, palette, out_path):
-    """Vẽ một tấm ảnh bìa SVG 400x560 và lưu vào out_path."""
+    """Vẽ một tấm ảnh bìa SVG 400x560 kiểu bìa sách in (chữ serif, khung mảnh)."""
     c1, c2 = palette
-    title_lines = _wrap(book['title'])
-    line_h = 42
-    start_y = 250 - (len(title_lines) - 1) * (line_h // 2)
+    title_lines = _wrap(book['title'], width=14)
+    line_h = 40
+    start_y = 268 - (len(title_lines) - 1) * (line_h // 2)
     title = '\n'.join(
         '  <text x="200" y="{y}" text-anchor="middle" '
-        'font-family="Segoe UI, Arial, sans-serif" font-size="30" font-weight="700" '
-        'fill="#ffffff">{line}</text>'.format(y=start_y + i * line_h, line=_esc(line))
+        'font-family="Georgia, \'Times New Roman\', serif" font-size="32" font-weight="700" '
+        'fill="#f5f2ea">{line}</text>'.format(y=start_y + i * line_h, line=_esc(line))
         for i, line in enumerate(title_lines)
     )
-    author_y = start_y + len(title_lines) * line_h + 26
+    author_y = start_y + len(title_lines) * line_h + 34
     svg = (
         '<?xml version="1.0" encoding="UTF-8"?>\n'
         '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="560" viewBox="0 0 400 560">\n'
@@ -159,21 +159,19 @@ def make_cover_svg(index, book, palette, out_path):
         '    </linearGradient>\n'
         '  </defs>\n'
         '  <rect width="400" height="560" fill="url(#bg)"/>\n'
-        '  <circle cx="340" cy="80" r="140" fill="#ffffff" opacity="0.07"/>\n'
-        '  <circle cx="40" cy="500" r="160" fill="#000000" opacity="0.10"/>\n'
-        '  <rect x="18" y="18" width="364" height="524" rx="12" fill="none" '
-        'stroke="#ffffff" stroke-opacity="0.4" stroke-width="2"/>\n'
-        '  <text x="200" y="64" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" '
-        'font-size="15" letter-spacing="6" fill="#ffffff" fill-opacity="0.8">THƯ VIỆN SỐ</text>\n'
+        '  <rect x="14" y="14" width="372" height="532" fill="none" '
+        'stroke="#f5f2ea" stroke-opacity="0.35" stroke-width="1.5"/>\n'
+        f'  <text x="200" y="70" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" '
+        'font-size="12" letter-spacing="4" fill="#f5f2ea" fill-opacity="0.72">'
+        f'{_esc(book["category"].upper())}</text>\n'
         f'{title}\n'
-        f'  <line x1="150" y1="{author_y - 14}" x2="250" y2="{author_y - 14}" '
-        'stroke="#ffffff" stroke-opacity="0.6" stroke-width="2"/>\n'
+        f'  <line x1="158" y1="{author_y - 18}" x2="242" y2="{author_y - 18}" '
+        'stroke="#f5f2ea" stroke-opacity="0.55" stroke-width="1.5"/>\n'
         f'  <text x="200" y="{author_y}" text-anchor="middle" '
-        'font-family="Segoe UI, Arial, sans-serif" font-size="20" '
-        f'fill="#ffffff" fill-opacity="0.95">{_esc(book["author"])}</text>\n'
-        '  <text x="200" y="512" text-anchor="middle" '
-        'font-family="Segoe UI, Arial, sans-serif" font-size="14" '
-        f'fill="#ffffff" fill-opacity="0.75">{_esc(book["category"])}</text>\n'
+        'font-family="Georgia, \'Times New Roman\', serif" font-size="18" font-style="italic" '
+        f'fill="#f5f2ea" fill-opacity="0.95">{_esc(book["author"])}</text>\n'
+        '  <text x="200" y="524" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" '
+        'font-size="10" letter-spacing="3" fill="#f5f2ea" fill-opacity="0.45">THƯ VIỆN SỐ</text>\n'
         '</svg>\n'
     )
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
@@ -198,8 +196,50 @@ def generate_all_covers():
         )
 
 
+def ensure_default_accounts():
+    """Đảm bảo 2 tài khoản mặc định (admin & user) luôn luôn tồn tại trong hệ thống."""
+    # 1. Tài khoản Quản trị viên: admin / admin123
+    admin = User.query.filter_by(username='admin').first()
+    if not admin:
+        admin = User(
+            username='admin',
+            email='admin@thuvien.local',
+            role='admin',
+            is_active=True,
+        )
+        admin.set_password('admin123')
+        db.session.add(admin)
+    else:
+        admin.role = 'admin'
+        admin.is_active = True
+        if not admin.check_password('admin123'):
+            admin.set_password('admin123')
+
+    # 2. Tài khoản Độc giả: user / user123
+    member = User.query.filter_by(username='user').first()
+    if not member:
+        member = User(
+            username='user',
+            email='user@thuvien.local',
+            role='user',
+            is_active=True,
+        )
+        member.set_password('user123')
+        db.session.add(member)
+    else:
+        member.role = 'user'
+        member.is_active = True
+        if not member.check_password('user123'):
+            member.set_password('user123')
+
+    db.session.commit()
+    return admin, member
+
+
 def seed_if_empty():
-    """Seed dữ liệu mẫu khi CSDL trống. Trả về True nếu đã tạo mới."""
+    """Seed dữ liệu mẫu khi CSDL trống. Đảm bảo ảnh bìa và tài khoản mặc định."""
+    ensure_default_accounts()
+
     if Book.query.count() > 0:
         return False
 
@@ -225,13 +265,10 @@ def seed_if_empty():
         )
         db.session.add(book)
 
-    admin = User(username='admin', email='admin@thuvien.local', role='admin', is_active=True)
-    admin.set_password('admin123')
-    db.session.add(admin)
-
     db.session.commit()
     print(
         f'[Seed] Đã tạo {len(SEED_BOOKS)} cuốn sách, '
-        f'{len(categories)} danh mục, tài khoản admin.'
+        f'{len(categories)} danh mục, và 2 tài khoản mặc định (admin, user).'
     )
     return True
+

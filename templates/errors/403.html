@@ -1,10 +1,16 @@
 {% extends 'base.html' %}
-{% block title %}403 – Không có quyền – Thư viện Số{% endblock %}
+{% block title %}403 — Từ chối truy cập{% endblock %}
 {% block content %}
-<div class="text-center py-5 empty-state mx-auto">
-  <div class="display-1 fw-bold text-danger">403</div>
-  <h4 class="fw-bold">Bạn không có quyền truy cập</h4>
-  <p class="text-muted">Trang này chỉ dành cho quản trị viên của thư viện.</p>
-  <a href="{{ url_for('user.home') }}" class="btn btn-primary mt-2">Về trang chủ</a>
+<div class="empty-state py-5">
+  <div class="empty-ic" style="background:var(--bad-soft);color:var(--bad);"><i class="bi bi-shield-lock-fill"></i></div>
+  <div class="display-4 fw-bold mb-2 text-danger">403</div>
+  <h2 class="section-title">Quyền truy cập bị từ chối</h2>
+  <p class="text-muted mb-4" style="max-width: 500px; margin: 0 auto;">
+    Trang này chỉ dành cho Quản trị viên hệ thống. Vui lòng đăng nhập với tài khoản có thẩm quyền hoặc quay về trang chủ.
+  </p>
+  <div class="d-flex justify-content-center gap-3">
+    <a href="{{ url_for('user.home') }}" class="btn btn-outline-secondary">Về trang chủ</a>
+    <a href="{{ url_for('auth.login') }}" class="btn btn-primary">Đăng nhập tài khoản khác</a>
+  </div>
 </div>
 {% endblock %}

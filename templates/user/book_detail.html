@@ -2,7 +2,7 @@
 {% block title %}{{ book.title }} – Thư viện Số{% endblock %}
 {% block content %}
 <nav aria-label="breadcrumb">
-  <ol class="breadcrumb small">
+  <ol class="breadcrumb">
     <li class="breadcrumb-item"><a href="{{ url_for('user.home') }}">Trang chủ</a></li>
     {% if book.category %}
     <li class="breadcrumb-item">
@@ -15,15 +15,14 @@
 
 <div class="row g-4">
   <div class="col-md-4 col-lg-3">
-    <img src="{{ book.cover }}" alt="{{ book.title }}"
-         class="img-fluid w-100 detail-cover shadow">
+    <img src="{{ book.cover }}" alt="{{ book.title }}" class="img-fluid w-100 detail-cover">
   </div>
   <div class="col-md-8 col-lg-9">
     {% if book.category %}
-    <span class="badge bg-light text-dark border mb-2">{{ book.category.name }}</span>
+    <span class="badge bg-primary mb-2">{{ book.category.name }}</span>
     {% endif %}
-    <h1 class="fw-bold">{{ book.title }}</h1>
-    <p class="lead text-muted mb-3">{{ book.author }}</p>
+    <h1 class="fw-bold" style="font-size: 32px;">{{ book.title }}</h1>
+    <p class="lead text-muted mb-3" style="font-size: 1.05rem;">{{ book.author }}</p>
 
     <div class="d-flex align-items-center gap-2 mb-3">
       <span class="rating-stars large">
@@ -34,23 +33,40 @@
       <b>{{ avg }}</b><span class="text-muted small">/ 5 · {{ count }} đánh giá</span>
     </div>
 
-    <div class="book-description mb-3">{{ book.description }}</div>
+    <div class="book-description mb-4">{{ book.description }}</div>
 
-    <div class="d-flex flex-wrap gap-2 align-items-center mb-4">
-      {% if book.in_stock %}
-      <span class="badge bg-success-subtle text-success fs-6 px-3 py-2">
-        <i class="bi bi-check-circle me-1"></i>Còn {{ book.available }} / {{ book.quantity }} bản
-      </span>
-      {% else %}
-      <span class="badge bg-danger-subtle text-danger fs-6 px-3 py-2">
-        <i class="bi bi-x-circle me-1"></i>Hết bản khả dụng
-      </span>
-      {% endif %}
-      <span class="text-muted small">Mã sách: #{{ book.id }}</span>
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-md-3">
+        <div class="detail-meta">
+          <div class="meta-label">Tồn kho</div>
+          <div class="stock {{ 'stock-ok' if book.in_stock else 'stock-out' }}">
+            <span class="dot"></span>
+            {{ book.available }}/{{ book.quantity }} bản
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="detail-meta">
+          <div class="meta-label">Hạn mượn</div>
+          <div class="meta-value">14 ngày</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="detail-meta">
+          <div class="meta-label">Mỗi lần</div>
+          <div class="meta-value">Tối đa 3 cuốn</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="detail-meta">
+          <div class="meta-label">Mã đầu sách</div>
+          <div class="meta-value">#{{ book.id }}</div>
+        </div>
+      </div>
     </div>
 
     {% if active_request %}
-    <div class="alert alert-info py-3 mb-0">
+    <div class="alert alert-info py-3 mb-0 flash-alert">
       <i class="bi bi-hourglass-split me-1"></i>
       Bạn đã có yêu cầu mượn cuốn sách này —
       <b>{{ status_labels[active_request.status] }}</b>.
@@ -58,36 +74,45 @@
       Hạn trả: <b>{{ active_request.due_date|fmt_date }}</b>.
       {% endif %}
     </div>
-    {% else %}
-    {% if not current_user.is_authenticated %}
-    <a href="{{ url_for('auth.login', next=request.path) }}" class="btn btn-primary px-4">
+    {% elif not current_user.is_authenticated %}
+    <a href="{{ url_for('auth.login', next=request.path) }}" class="btn btn-primary px-4 py-2">
       <i class="bi bi-box-arrow-in-right me-1"></i>Đăng nhập để mượn sách
     </a>
     {% else %}
-    <form method="post" action="{{ url_for('user.add_to_cart', book_id=book.id) }}"
-          class="d-flex gap-2"
-          {% if not book.in_stock %}style="visibility:hidden;opacity:0"{% endif %}>
-      <input type="hidden" name="next" value="{{ request.path }}">
-      <button class="btn btn-primary px-4">
-        <i class="bi bi-bag-plus me-1"></i>Thêm vào giỏ mượn
-      </button>
-    </form>
-    {% endif %}
+    <div class="d-flex flex-wrap gap-2">
+      <form method="post" action="{{ url_for('user.add_to_cart', book_id=book.id) }}"
+            {% if not book.in_stock %}style="visibility:hidden;opacity:0"{% endif %}>
+        <input type="hidden" name="next" value="{{ request.path }}">
+        <button class="btn btn-primary px-4 py-2">
+          <i class="bi bi-bag-plus me-2"></i>Thêm vào giỏ mượn
+        </button>
+      </form>
+      {% if cart_count %}
+      <a href="{{ url_for('user.cart') }}" class="btn btn-outline-primary px-3 py-2">
+        <i class="bi bi-bag me-1"></i>Xem giỏ ({{ cart_count }})
+      </a>
+      {% endif %}
+      {% if not book.in_stock %}
+      <span class="stock stock-out fs-6 align-self-center">
+        <span class="dot"></span>Hết bản khả dụng
+      </span>
+      {% endif %}
+    </div>
     {% endif %}
   </div>
 </div>
 
 <section class="mt-5">
-  <h2 class="h4 fw-bold mb-3">
-    Đánh giá & bình luận
-    <span class="text-muted fw-normal fs-6">({{ count }})</span>
+  <h2 class="section-title mb-3">
+    Đánh giá &amp; bình luận
+    <span class="text-muted fw-normal" style="font-size: 1rem;">({{ count }})</span>
   </h2>
 
   {% if current_user.is_authenticated %}
   <form method="post" action="{{ url_for('user.add_review', book_id=book.id) }}"
-        class="card border-0 shadow-sm p-3 mb-4">
-    <div class="d-flex align-items-center gap-2 mb-2">
-      <span class="fw-semibold small text-nowrap">Bạn chấm:</span>
+        class="card p-3 mb-4">
+    <div class="d-flex align-items-center gap-2 mb-3">
+      <span class="fw-semibold small text-nowrap" style="color:var(--ink-2)">Bạn chấm cuốn này:</span>
       <div class="star-input">
         <input type="radio" name="rating" id="st5" value="5"
                {% if my_review and my_review.rating == 5 %}checked{% endif %}>
@@ -110,35 +135,33 @@
       <textarea name="comment" class="form-control" rows="2" minlength="5" required
                 placeholder="Chia sẻ cảm nhận của bạn về cuốn sách này…">{{ my_review.comment if my_review else '' }}</textarea>
       <button class="btn btn-primary text-nowrap align-self-end">
-        {{ 'Cập nhật đánh giá' if my_review else 'Gửi đánh giá' }}
+        {{ 'Cập nhật' if my_review else 'Gửi đánh giá' }}
       </button>
     </div>
   </form>
   {% else %}
-  <div class="alert alert-light border py-2 mb-4">
+  <div class="alert alert-light border py-2 mb-4" style="background:#fbfaf7;">
     <a href="{{ url_for('auth.login', next=request.path) }}">Đăng nhập</a>
     để viết đánh giá và bình luận cho cuốn sách này.
   </div>
   {% endif %}
 
   {% if reviews %}
-  <div class="list-group list-group-flush">
+  <div class="card px-4">
     {% for r in reviews %}
-    <div class="list-group-item px-0 review-item py-3">
-      <div class="d-flex gap-3">
-        <div class="review-avatar">{{ r.author.username[:1]|upper }}</div>
-        <div class="flex-grow-1">
-          <div class="d-flex flex-wrap align-items-center gap-2">
-            <b>{{ r.author.username }}</b>
-            <span class="small text-warning">
-              {% for i in range(1, 6) %}
-              {% if i <= r.rating %}★{% else %}<span class="text-muted">★</span>{% endif %}
-              {% endfor %}
-            </span>
-            <span class="text-muted small">· {{ r.created_at|fmt_date }}</span>
-          </div>
-          <p class="mb-0 mt-1">{{ r.comment }}</p>
+    <div class="review-item d-flex gap-3">
+      <div class="review-avatar">{{ r.author.username[:1]|upper }}</div>
+      <div class="flex-grow-1">
+        <div class="d-flex flex-wrap align-items-center gap-2">
+          <b>{{ r.author.username }}</b>
+          <span class="small text-warning">
+            {% for i in range(1, 6) %}
+            {% if i <= r.rating %}★{% else %}<span class="text-muted">★</span>{% endif %}
+            {% endfor %}
+          </span>
+          <span class="text-muted small">· {{ r.created_at|fmt_date }}</span>
         </div>
+        <p class="mb-0 mt-1">{{ r.comment }}</p>
       </div>
     </div>
     {% endfor %}
@@ -150,3 +173,4 @@
   {% endif %}
 </section>
 {% endblock %}
+

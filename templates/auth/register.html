@@ -1,51 +1,163 @@
 {% extends 'base.html' %}
-{% block title %}Đăng ký – Thư viện Số{% endblock %}
-{% block content %}
-<div class="row justify-content-center">
-  <div class="col-md-7 col-lg-5">
-    <div class="card border-0 shadow-sm auth-card">
-      <div class="card-body p-4">
-        <div class="text-center mb-4">
-          <div class="auth-logo">📚</div>
-          <h1 class="h5 fw-bold">Tạo tài khoản thành viên</h1>
-          <p class="small text-muted mb-0">Miễn phí — chỉ mất 1 phút!</p>
+{% block title %}Đăng ký mở thẻ độc giả — Thư viện Số{% endblock %}
+{% block page %}
+<div class="auth-split-wrapper">
+  <div class="auth-container-card">
+    <div class="row g-0">
+
+      <!-- Cột trái: Giới thiệu quyền lợi độc giả -->
+      <div class="col-lg-5 col-xl-6">
+        <div class="auth-hero-pane">
+          <div>
+            <div class="auth-brand-badge">
+              <span class="brand-mark"><i class="bi bi-book-half"></i></span>
+              <div class="brand-text">
+                <span class="brand-name">Thư viện Số</span>
+                <span class="brand-tag">MEMBERSHIP CARD</span>
+              </div>
+            </div>
+
+            <div class="auth-quote-box">
+              <div class="auth-quote-icon"><i class="bi bi-quote"></i></div>
+              <div class="auth-quote-text">
+                Một căn phòng không có sách cũng giống như một thể xác không có linh hồn.
+              </div>
+              <div class="auth-quote-author">— Marcus Tullius Cicero</div>
+            </div>
+
+            <ul class="auth-features-list">
+              <li>
+                <span class="auth-feature-check"><i class="bi bi-check2"></i></span>
+                <span>Thẻ độc giả số hóa cấp tức thì, hoàn toàn miễn phí</span>
+              </li>
+              <li>
+                <span class="auth-feature-check"><i class="bi bi-check2"></i></span>
+                <span>Mượn tới 3 đầu sách cùng lúc, đổi sách nhanh chóng</span>
+              </li>
+              <li>
+                <span class="auth-feature-check"><i class="bi bi-check2"></i></span>
+                <span>Ghi chú, đánh giá và xây dựng tủ sách tri thức của riêng bạn</span>
+              </li>
+              <li>
+                <span class="auth-feature-check"><i class="bi bi-check2"></i></span>
+                <span>Hệ thống nhắc nhở tự động, không lo quá hạn</span>
+              </li>
+            </ul>
+          </div>
+
+          <div class="auth-system-status">
+            <span class="status-pulsing-dot"></span>
+            <span>Quy trình đăng ký 100% tự động · Bắt đầu mượn sách ngay sau khi tạo</span>
+          </div>
         </div>
-
-        {% if error %}
-        <div class="alert alert-danger py-2 small">{{ error }}</div>
-        {% endif %}
-
-        <form method="post">
-          <div class="mb-3">
-            <label class="form-label fw-semibold small">Tên đăng nhập *</label>
-            <input class="form-control" name="username" required minlength="3" maxlength="30"
-                   placeholder="Ít nhất 3 ký tự" value="{{ request.form.get('username', '') }}">
-          </div>
-          <div class="mb-3">
-            <label class="form-label fw-semibold small">Email</label>
-            <input type="email" class="form-control" name="email"
-                   placeholder="name@example.com" value="{{ request.form.get('email', '') }}">
-          </div>
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              <label class="form-label fw-semibold small">Mật khẩu *</label>
-              <input type="password" class="form-control" name="password" required minlength="6"
-                     placeholder="Ít nhất 6 ký tự">
-            </div>
-            <div class="col-md-6 mb-3">
-              <label class="form-label fw-semibold small">Xác nhận mật khẩu *</label>
-              <input type="password" class="form-control" name="confirm" required minlength="6"
-                     placeholder="Nhập lại mật khẩu">
-            </div>
-          </div>
-          <button class="btn btn-primary w-100 py-2">Đăng ký</button>
-        </form>
-
-        <hr>
-        <p class="small text-center text-muted mb-0">
-          Đã có tài khoản? <a href="{{ url_for('auth.login') }}">Đăng nhập</a>
-        </p>
       </div>
+
+      <!-- Cột phải: Form tạo tài khoản -->
+      <div class="col-lg-7 col-xl-6">
+        <div class="auth-form-pane">
+          <div class="auth-header">
+            <span class="auth-pill-label">Đăng ký thành viên</span>
+            <h1 class="auth-heading">Mở thẻ độc giả mới</h1>
+            <p class="auth-subtitle">Chỉ mất 30 giây để bắt đầu hành trình đọc sách của bạn.</p>
+          </div>
+
+          {% if error %}
+          <div class="flash-alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-octagon-fill text-danger fs-5"></i>
+            <div class="flex-grow-1">{{ error }}</div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
+          </div>
+          {% endif %}
+
+          <form method="post" autocomplete="on">
+            <div class="mb-3">
+              <label for="username" class="form-label">Tên đăng nhập <span class="text-danger">*</span></label>
+              <div class="input-container">
+                <i class="bi bi-person input-icon"></i>
+                <input id="username" name="username" type="text" class="form-control" required minlength="3" maxlength="30"
+                       placeholder="Từ 3 đến 30 ký tự, viết liền không dấu" value="{{ request.form.get('username', '') }}">
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="email" class="form-label">
+                <span>Địa chỉ Email</span>
+                <span class="text-muted fw-normal small">(không bắt buộc)</span>
+              </label>
+              <div class="input-container">
+                <i class="bi bi-envelope input-icon"></i>
+                <input id="email" type="email" name="email" class="form-control"
+                       placeholder="name@example.com (để nhận tin báo mượn sách)" value="{{ request.form.get('email', '') }}">
+              </div>
+            </div>
+
+            <div class="row g-3 mb-3">
+              <div class="col-sm-6">
+                <label for="reg-password" class="form-label">Mật khẩu <span class="text-danger">*</span></label>
+                <div class="input-container">
+                  <i class="bi bi-lock input-icon"></i>
+                  <input id="reg-password" type="password" name="password" class="form-control" required minlength="6"
+                         placeholder="Tối thiểu 6 ký tự">
+                  <button type="button" class="pwd-toggle-btn" data-target="reg-password" title="Hiện/ẩn mật khẩu">
+                    <i class="bi bi-eye"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="col-sm-6">
+                <label for="confirm" class="form-label">Xác nhận mật khẩu <span class="text-danger">*</span></label>
+                <div class="input-container">
+                  <i class="bi bi-shield-check input-icon"></i>
+                  <input id="confirm" type="password" name="confirm" class="form-control" required minlength="6"
+                         placeholder="Nhập lại mật khẩu">
+                  <button type="button" class="pwd-toggle-btn" data-target="confirm" title="Hiện/ẩn mật khẩu">
+                    <i class="bi bi-eye"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Thanh đo độ mạnh mật khẩu -->
+            <div class="mb-3">
+              <div id="password-strength" class="strength-bar-wrap">
+                <div class="strength-segment"></div>
+                <div class="strength-segment"></div>
+                <div class="strength-segment"></div>
+                <div class="strength-segment"></div>
+              </div>
+              <div class="d-flex justify-content-between align-items-center mt-1">
+                <span id="strength-label" class="small fw-semibold text-muted"></span>
+                <span class="small text-muted">Tối thiểu 6 ký tự</span>
+              </div>
+            </div>
+
+            <div class="mb-4">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="terms" required checked>
+                <label class="form-check-label small text-muted" for="terms">
+                  Tôi đồng ý với quy định mượn, trả và giữ gìn sách của Thư viện Số.
+                </label>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 btn-lg shadow-sm">
+              <span>Đăng ký &amp; Khám phá thư viện</span>
+              <i class="bi bi-arrow-right"></i>
+            </button>
+          </form>
+
+          <div class="text-center mt-4 pt-2 border-top border-light-subtle">
+            <p class="small text-muted mb-0">
+              Đã có tài khoản? 
+              <a href="{{ url_for('auth.login') }}" class="fw-bold text-decoration-none">
+                Đăng nhập ngay <i class="bi bi-box-arrow-in-right"></i>
+              </a>
+            </p>
+          </div>
+
+        </div>
+      </div>
+
     </div>
   </div>
 </div>

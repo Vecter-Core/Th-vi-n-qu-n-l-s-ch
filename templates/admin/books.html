@@ -1,46 +1,60 @@
 {% extends 'base.html' %}
-{% block title %}Kho sách – Quản trị{% endblock %}
+{% block title %}Kho sách — Quản trị Thư viện{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-  <h1 class="h4 fw-bold mb-0">
-    Quản lý kho sách <span class="text-muted fw-normal">({{ books|length }} đầu)</span>
-  </h1>
+<div class="page-head">
+  <div>
+    <div class="d-flex align-items-center gap-2 mb-1">
+      <span class="user-badge-mini user-badge-admin"><i class="bi bi-collection-fill me-1"></i>Kho dữ liệu ấn phẩm</span>
+    </div>
+    <h1 class="page-title">Quản lý kho sách &amp; Tồn kho</h1>
+    <p class="page-sub">Hiện đang quản lý <strong>{{ books|length }} đầu sách</strong> trong hệ thống lưu trữ.</p>
+  </div>
   <a href="{{ url_for('admin.book_add') }}" class="btn btn-primary">
-    <i class="bi bi-plus-lg me-1"></i>Thêm sách mới
+    <i class="bi bi-plus-lg me-1"></i>Thêm tác phẩm mới
   </a>
 </div>
 
-<form class="row g-2 mb-3" method="get">
-  <div class="col-md-5">
-    <input class="form-control" name="q" placeholder="Tìm theo tên sách, tác giả…" value="{{ q }}">
-  </div>
-  <div class="col-md-4">
-    <select class="form-select" name="category">
-      <option value="">Tất cả danh mục</option>
-      {% for c in categories %}
-      <option value="{{ c.id }}" {% if c.id == category_id %}selected{% endif %}>{{ c.name }}</option>
-      {% endfor %}
-    </select>
-  </div>
-  <div class="col-md-3 d-flex gap-1">
-    <button class="btn btn-outline-primary">Lọc</button>
-    {% if q or category_id %}
-    <a class="btn btn-outline-secondary" href="{{ url_for('admin.books') }}">Xóa lọc</a>
-    {% endif %}
-  </div>
-</form>
+<!-- Bộ lọc tìm kiếm sách trong kho -->
+<div class="card p-3 mb-4 bg-white">
+  <form class="row g-2 align-items-center" method="get">
+    <div class="col-md-5">
+      <div class="input-container">
+        <i class="bi bi-search input-icon"></i>
+        <input class="form-control" name="q" placeholder="Tìm kiếm theo tên sách hoặc tác giả…" value="{{ q }}">
+      </div>
+    </div>
+    <div class="col-md-4">
+      <select class="form-select" name="category">
+        <option value="">Tất cả thể loại danh mục</option>
+        {% for c in categories %}
+        <option value="{{ c.id }}" {% if c.id == category_id %}selected{% endif %}>{{ c.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-3 d-flex gap-2">
+      <button class="btn btn-primary flex-grow-1"><i class="bi bi-funnel me-1"></i>Lọc dữ liệu</button>
+      {% if q or category_id %}
+      <a class="btn btn-outline-secondary" href="{{ url_for('admin.books') }}">Xóa lọc</a>
+      {% endif %}
+    </div>
+  </form>
+</div>
 
-<div class="card border-0 shadow-sm">
+<div class="card overflow-hidden">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span>Danh mục sách trong kho</span>
+    <span class="badge bg-secondary">{{ books|length }} đầu sách</span>
+  </div>
   <div class="table-responsive">
-    <table class="table align-middle mb-0">
-      <thead class="table-light">
+    <table class="table align-middle">
+      <thead>
         <tr>
-          <th style="width: 60px;">#</th>
-          <th style="width: 64px;">Ảnh</th>
-          <th>Tên sách</th>
+          <th style="width: 50px;">#</th>
+          <th style="width: 64px;">Bìa</th>
+          <th>Tên tác phẩm &amp; Mã</th>
           <th>Tác giả</th>
-          <th>Danh mục</th>
-          <th>Tồn kho</th>
+          <th>Thể loại</th>
+          <th>Khả dụng / Tổng số</th>
           <th class="text-end">Thao tác</th>
         </tr>
       </thead>
@@ -48,42 +62,53 @@
         {% for book in books %}
         <tr>
           <td class="text-muted">{{ loop.index }}</td>
-          <td><img src="{{ book.cover }}" class="thumb-sm" alt=""></td>
+          <td><img src="{{ book.cover }}" class="thumb-sm" alt="{{ book.title }}"></td>
           <td>
-            <div class="fw-semibold">{{ book.title }}</div>
-            <small class="text-muted">Mã: #{{ book.id }}</small>
+            <div class="fw-bold text-dark">{{ book.title }}</div>
+            <small class="text-muted">Mã lưu trữ: #{{ book.id }}</small>
           </td>
-          <td class="text-muted">{{ book.author }}</td>
+          <td class="text-muted fst-italic">{{ book.author }}</td>
           <td>
             {% if book.category %}
-            <span class="badge bg-light text-dark border">{{ book.category.name }}</span>
-            {% else %}—{% endif %}
+            <span class="badge bg-secondary">{{ book.category.name }}</span>
+            {% else %}
+            <span class="text-muted small">—</span>
+            {% endif %}
           </td>
           <td>
             <div class="d-flex align-items-center gap-2 flex-wrap">
-              <span class="badge {{ 'bg-success-subtle text-success' if book.in_stock else 'bg-danger-subtle text-danger' }}">
-                {{ book.available }}/{{ book.quantity }}
+              <span class="stock {{ 'stock-ok' if book.in_stock else 'stock-out' }}">
+                <span class="dot"></span>{{ book.available }}/{{ book.quantity }} cuốn
               </span>
               <form class="d-flex align-items-center gap-1"
                     method="post" action="{{ url_for('admin.book_set_quantity', book_id=book.id) }}">
                 <input type="number" name="quantity" class="form-control form-control-sm"
-                       style="width: 70px;" min="0" value="{{ book.quantity }}">
-                <button class="btn btn-sm btn-outline-secondary" title="Cập nhật số lượng">✓</button>
+                       style="width: 70px; height: 32px;" min="0" value="{{ book.quantity }}" title="Nhập số lượng mới">
+                <button class="btn btn-sm btn-outline-secondary" style="height: 32px; padding: 0 8px;" title="Cập nhật">
+                  <i class="bi bi-check2"></i>
+                </button>
               </form>
             </div>
           </td>
           <td class="text-end text-nowrap">
             <a href="{{ url_for('admin.book_edit', book_id=book.id) }}"
-               class="btn btn-sm btn-outline-primary">Sửa</a>
+               class="btn btn-sm btn-outline-primary">
+              <i class="bi bi-pencil me-1"></i>Sửa
+            </a>
             <form method="post" action="{{ url_for('admin.book_delete', book_id=book.id) }}"
-                  class="d-inline" data-confirm="Xóa sách “{{ book.title }}” khỏi kho?">
-              <button class="btn btn-sm btn-outline-danger">Xóa</button>
+                  class="d-inline" data-confirm="Xác nhận xóa hoàn toàn sách “{{ book.title }}” khỏi kho lưu trữ?">
+              <button class="btn btn-sm btn-outline-danger">
+                <i class="bi bi-trash me-1"></i>Xóa
+              </button>
             </form>
           </td>
         </tr>
         {% else %}
         <tr>
-          <td colspan="7" class="text-center text-muted py-4">Chưa có sách nào trong kho.</td>
+          <td colspan="7" class="text-center text-muted py-5">
+            <i class="bi bi-collection fs-3 d-block mb-2"></i>
+            Chưa có sách nào trong kho lưu trữ.
+          </td>
         </tr>
         {% endfor %}
       </tbody>

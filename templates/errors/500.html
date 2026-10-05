@@ -1,10 +1,15 @@
 {% extends 'base.html' %}
-{% block title %}500 – Lỗi hệ thống – Thư viện Số{% endblock %}
+{% block title %}500 — Sự cố hệ thống{% endblock %}
 {% block content %}
-<div class="text-center py-5 empty-state mx-auto">
-  <div class="display-1 fw-bold text-warning">500</div>
-  <h4 class="fw-bold">Đã có lỗi xảy ra</h4>
-  <p class="text-muted">Xin lỗi, hệ thống gặp sự cố. Vui lòng thử lại sau ít phút.</p>
-  <a href="{{ url_for('user.home') }}" class="btn btn-primary mt-2">Về trang chủ</a>
+<div class="empty-state py-5">
+  <div class="empty-ic" style="background:var(--bad-soft);color:var(--bad);"><i class="bi bi-exclamation-triangle-fill"></i></div>
+  <div class="display-4 fw-bold mb-2 text-danger">500</div>
+  <h2 class="section-title">Đã xảy ra lỗi máy chủ nội bộ</h2>
+  <p class="text-muted mb-4" style="max-width: 500px; margin: 0 auto;">
+    Hệ thống đang gặp sự cố gián đoạn tạm thời. Đội ngũ kỹ thuật của thư viện sẽ sớm khắc phục.
+  </p>
+  <a href="{{ url_for('user.home') }}" class="btn btn-primary">
+    <i class="bi bi-arrow-counterclockwise me-1"></i>Tải lại trang chủ
+  </a>
 </div>
 {% endblock %}

@@ -71,6 +71,21 @@ class Book(db.Model):
     category_id = db.Column(db.Integer, db.ForeignKey('categories.id'), nullable=True)
     created_at = db.Column(db.DateTime, default=now, nullable=False)
 
+    # --- Thông tin "xúc giác" & nhân văn (Editorial & Tactile Design) ---
+    # Tâm trạng đọc sách (Reading Mood Matcher) — khóa kỹ thuật: healing / overnight / saturday / deep
+    mood = db.Column(db.String(30), nullable=True, index=True)
+    # Số trang — dùng cho bộ lọc "đọc hết trong một đêm"
+    pages = db.Column(db.Integer, nullable=True, default=0)
+    # Tình trạng vật lý của cuốn sách (vết sẹo, góc bìa quăn...)
+    condition_note = db.Column(db.String(300), nullable=True, default='')
+    # Số người từng mượn cuốn này (lịch sử truyền tay)
+    times_borrowed = db.Column(db.Integer, nullable=False, default=0)
+    # Ghi chú tay của thủ thư (Sticky Note viết tay)
+    librarian_note = db.Column(db.String(400), nullable=True, default='')
+    librarian_note_by = db.Column(db.String(80), nullable=True, default='')
+    # Màu gáy sách cho Kệ sách gỗ 3D (Wood Shelf View)
+    spine_color = db.Column(db.String(9), nullable=True, default='')
+
     category = db.relationship('Category', back_populates='books')
     borrow_requests = db.relationship('BorrowRequest', backref='book', lazy='dynamic')
     reviews = db.relationship('Review', backref='book', lazy='dynamic')
@@ -193,3 +208,27 @@ def record_audit(action, details='', actor_id=None):
     db.session.add(
         AuditLog(action=action, details=details, actor_id=actor_id, created_at=now())
     )
+
+
+def migrate_schema():
+    """Tự thêm cột mới vào bảng `books` nếu chạy trên CSDL cũ (SQLite).
+    An toàn — chỉ ALTER khi cột chưa tồn tại. Chạy trong app_context."""
+    engine = db.engine
+    # Thuật toán xếp hạng & tính khả dụng đã có sẵn trong Python — không cần cột mới
+    required = {
+        'mood': 'VARCHAR(30)',
+        'pages': 'INTEGER DEFAULT 0',
+        'condition_note': 'VARCHAR(300)',
+        'times_borrowed': 'INTEGER NOT NULL DEFAULT 0',
+        'librarian_note': 'VARCHAR(400)',
+        'librarian_note_by': 'VARCHAR(80)',
+        'spine_color': 'VARCHAR(9)',
+    }
+    with engine.connect() as conn:
+        existing = {
+            row[1] for row in conn.execute(db.text('PRAGMA table_info(books)'))
+        }
+        for col, ddl in required.items():
+            if col not in existing:
+                conn.execute(db.text(f'ALTER TABLE books ADD COLUMN {col} {ddl}'))
+                conn.commit()

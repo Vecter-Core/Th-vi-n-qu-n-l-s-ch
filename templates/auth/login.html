@@ -1,42 +1,167 @@
 {% extends 'base.html' %}
-{% block title %}Đăng nhập – Thư viện Số{% endblock %}
-{% block content %}
-<div class="row justify-content-center">
-  <div class="col-md-6 col-lg-4">
-    <div class="card border-0 shadow-sm auth-card">
-      <div class="card-body p-4">
-        <div class="text-center mb-4">
-          <div class="auth-logo">📚</div>
-          <h1 class="h5 fw-bold">Đăng nhập vào Thư viện Số</h1>
-          <p class="small text-muted mb-0">Chào mừng bạn trở lại!</p>
-        </div>
+{% block title %}Đăng nhập — Thư viện Số{% endblock %}
+{% block page %}
+<div class="auth-split-wrapper">
+  <div class="auth-container-card">
+    <div class="row g-0">
+      
+      <!-- Cột trái: Giới thiệu thư viện & Tinh thần học thuật -->
+      <div class="col-lg-5 col-xl-6">
+        <div class="auth-hero-pane">
+          <div>
+            <div class="auth-brand-badge">
+              <span class="brand-mark"><i class="bi bi-book-half"></i></span>
+              <div class="brand-text">
+                <span class="brand-name">Thư viện Số</span>
+                <span class="brand-tag">ARCHIVE &amp; KNOWLEDGE</span>
+              </div>
+            </div>
 
-        {% if error %}
-        <div class="alert alert-danger py-2 small">{{ error }}</div>
-        {% endif %}
+            <div class="auth-quote-box">
+              <div class="auth-quote-icon"><i class="bi bi-quote"></i></div>
+              <div class="auth-quote-text">
+                Tôi luôn tưởng tượng rằng Thiên đường sẽ là một kiểu thư viện.
+              </div>
+              <div class="auth-quote-author">— Jorge Luis Borges</div>
+            </div>
 
-        <form method="post">
-          <div class="mb-3">
-            <label class="form-label fw-semibold small">Tên đăng nhập</label>
-            <input class="form-control" name="username" required autofocus
-                   placeholder="vd: admin" value="{{ request.form.get('username', '') }}">
+            <ul class="auth-features-list">
+              <li>
+                <span class="auth-feature-check"><i class="bi bi-check2"></i></span>
+                <span>Mượn tới 3 cuốn sách mỗi lượt, thời hạn 14 ngày</span>
+              </li>
+              <li>
+                <span class="auth-feature-check"><i class="bi bi-check2"></i></span>
+                <span>Quản lý giỏ mượn và hạn trả sách trực tuyến</span>
+              </li>
+              <li>
+                <span class="auth-feature-check"><i class="bi bi-check2"></i></span>
+                <span>Đánh giá sách và chia sẻ tri thức cùng cộng đồng</span>
+              </li>
+            </ul>
           </div>
-          <div class="mb-3">
-            <label class="form-label fw-semibold small">Mật khẩu</label>
-            <input type="password" class="form-control" name="password" required placeholder="••••••">
-          </div>
-          <button class="btn btn-primary w-100 py-2">Đăng nhập</button>
-        </form>
 
-        <hr>
-        <div class="alert alert-light border small mb-3">
-          <i class="bi bi-info-circle me-1"></i>
-          Tài khoản quản trị mặc định: <b>admin</b> / <b>admin123</b>
+          <div class="auth-system-status">
+            <span class="status-pulsing-dot"></span>
+            <span>Hệ thống trực tuyến 24/7 · Tự động phân quyền tài khoản</span>
+          </div>
         </div>
-        <p class="small text-center text-muted mb-0">
-          Chưa có tài khoản? <a href="{{ url_for('auth.register') }}">Đăng ký ngay</a>
-        </p>
       </div>
+
+      <!-- Cột phải: Form đăng nhập & Chọn nhanh tài khoản -->
+      <div class="col-lg-7 col-xl-6">
+        <div class="auth-form-pane">
+          <div class="auth-header">
+            <span class="auth-pill-label">Cổng xác thực</span>
+            <h1 class="auth-heading">Đăng nhập tài khoản</h1>
+            <p class="auth-subtitle">Nhập thông tin xác thực để bắt đầu phiên làm việc.</p>
+          </div>
+
+          {% if error %}
+          <div class="flash-alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-octagon-fill text-danger fs-5"></i>
+            <div class="flex-grow-1">{{ error }}</div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
+          </div>
+          {% endif %}
+
+          <!-- Bộ chọn nhanh tài khoản mẫu (1-Click Switcher) -->
+          <div class="mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="small fw-bold text-uppercase text-muted" style="letter-spacing: 0.08em; font-size: 11px;">
+                <i class="bi bi-lightning-charge-fill text-warning me-1"></i>Tài khoản mẫu có sẵn (Click để điền)
+              </span>
+            </div>
+            <div class="demo-accounts-grid">
+              
+              <!-- Thẻ Người dùng thường -->
+              <div class="demo-card user-card" data-user="user" data-pass="user123" role="button" tabindex="0">
+                <div class="demo-card-role">
+                  <i class="bi bi-person-circle demo-card-icon"></i>
+                  <span>Độc giả</span>
+                </div>
+                <div class="demo-card-user">
+                  Tài khoản: <code>user</code><br>
+                  Mật khẩu: <code>user123</code>
+                </div>
+                <div class="demo-card-dest">
+                  <i class="bi bi-arrow-right-short"></i>Vào giao diện đọc sách
+                </div>
+              </div>
+
+              <!-- Thẻ Quản trị viên -->
+              <div class="demo-card admin-card" data-user="admin" data-pass="admin123" role="button" tabindex="0">
+                <div class="demo-card-role">
+                  <i class="bi bi-shield-lock-fill demo-card-icon"></i>
+                  <span>Quản trị viên</span>
+                </div>
+                <div class="demo-card-user">
+                  Tài khoản: <code>admin</code><br>
+                  Mật khẩu: <code>admin123</code>
+                </div>
+                <div class="demo-card-dest">
+                  <i class="bi bi-arrow-right-short"></i>Vào bảng quản trị
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <div class="auth-divider">hoặc nhập thông tin</div>
+
+          <!-- Form đăng nhập chính thức -->
+          <form method="post" autocomplete="on">
+            <div class="mb-3">
+              <label for="username" class="form-label">Tên đăng nhập</label>
+              <div class="input-container">
+                <i class="bi bi-person input-icon"></i>
+                <input id="username" name="username" type="text" class="form-control" required autofocus
+                       placeholder="Ví dụ: user hoặc admin" value="{{ request.form.get('username', '') }}">
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <label for="password" class="form-label mb-0">Mật khẩu</label>
+              </div>
+              <div class="input-container">
+                <i class="bi bi-lock input-icon"></i>
+                <input id="password" type="password" name="password" class="form-control" required
+                       placeholder="Nhập mật khẩu của bạn">
+                <button type="button" class="pwd-toggle-btn" data-target="password" title="Hiện/ẩn mật khẩu">
+                  <i class="bi bi-eye"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="remember" id="remember" checked>
+                <label class="form-check-label small text-muted" for="remember">
+                  Ghi nhớ đăng nhập
+                </label>
+              </div>
+              <span class="small text-muted">Bảo mật SSL 256-bit</span>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 btn-lg shadow-sm">
+              <span>Đăng nhập hệ thống</span>
+              <i class="bi bi-arrow-right"></i>
+            </button>
+          </form>
+
+          <div class="text-center mt-4 pt-2 border-top border-light-subtle">
+            <p class="small text-muted mb-0">
+              Chưa có tài khoản độc giả? 
+              <a href="{{ url_for('auth.register') }}" class="fw-bold text-decoration-none">
+                Đăng ký mở thẻ miễn phí <i class="bi bi-arrow-up-right-small"></i>
+              </a>
+            </p>
+          </div>
+
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
